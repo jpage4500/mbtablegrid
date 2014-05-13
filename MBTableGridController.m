@@ -41,17 +41,19 @@
 
 	// Add 10 columns
 	int i = 0;
-	while (i < 10) {
+	while (i < 100) {
 		[self addColumn:self];
 		i++;
 	}
 	
 	// Add 100 rows
 	int j = 0;
-	while (j < 100) {
+	while (j < 1000) {
 		[self addRow:self];
 		j++;
 	}
+	
+	[tableGrid setIndicatorImage:[NSImage imageNamed:@"sort-asc"] inColumn:3];
 	
 	[tableGrid reloadData];
 	

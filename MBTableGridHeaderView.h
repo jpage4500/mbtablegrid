@@ -81,6 +81,17 @@
 @property MBTableGridHeaderOrientation orientation;
 
 /**
+ * @brief		The indicator image for the header cell
+ */
+@property (nonatomic, strong) NSImage *indicatorImage;
+
+/**
+ * @brief		The column to set the indicator image on
+ */
+@property (nonatomic) NSUInteger indicatorImageColumn;
+
+
+/**
  * @}
  */
 

@@ -98,7 +98,8 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 	if(self = [super initWithFrame:frameRect]) {
         
         columnWidths = [NSMutableDictionary dictionary];
-        
+        columnIndexNames = [NSMutableArray array];
+		
 		// Post frame changed notifications
 		[self setPostsFrameChangedNotifications:YES];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(viewFrameDidChange:) name:NSViewFrameDidChangeNotification object:self];
@@ -187,6 +188,38 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 	return YES;
 }
 
+/**
+ * @brief		Sets the indicator image for the specified column.
+ *				This is used for indicating which direction the
+ *				column is being sorted by.
+ *
+ * @param		anImage			The sort indicator image.
+ * @param		columnIndex		The index of the column.
+ *
+ * @return		The header value for the row.
+ */
+- (void)setIndicatorImage:(NSImage *)anImage inColumn:(NSUInteger)columnIndex {
+	MBTableGridHeaderView *headerView = [self columnHeaderView];
+	headerView.indicatorImageColumn = columnIndex;
+	headerView.indicatorImage = anImage;
+}
+
+/**
+ * @brief		Returns the sort indicator image
+ *				for the specified column.
+ *
+ * @param		columnIndex		The index of the column.
+ *
+ * @return		The sort indicator image for the column.
+ */
+- (NSImage *)indicatorImageInColumn:(NSUInteger)columnIndex {
+	NSImage *indicatorImage = nil;
+	
+	return indicatorImage;
+}
+
+
+
 - (void)drawRect:(NSRect)aRect
 {		
 	// If the view is the first responder, draw the focus ring
@@ -220,14 +253,28 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 {
     
     // Get column key
-    NSString *columnKey = [NSString stringWithFormat:@"column%lu", columnIndex];
+	NSString *columnKey = nil;
+	if ([columnIndexNames count] > columnIndex) {
+		columnKey = columnIndexNames[columnIndex];
+	}
 
+	if (!columnKey) {
+		columnKey = [NSString stringWithFormat:@"column%lu", columnIndex];
+	}
+	
     // Set new width of column
     float currentWidth = [columnWidths[columnKey] floatValue];
     currentWidth += distance;
 	
-	if (currentWidth < MBTableHeaderMinimumColumnWidth) {
-		currentWidth = MBTableHeaderMinimumColumnWidth;
+	CGFloat minColumnWidth = MBTableHeaderMinimumColumnWidth;
+	
+	if (columnHeaderView.indicatorImage && columnHeaderView.indicatorImageColumn == columnIndex) {
+		minColumnWidth += columnHeaderView.indicatorImage.size.width + 2.0f;
+	}
+	
+	if (currentWidth < minColumnWidth) {
+		currentWidth = minColumnWidth;
+		
 	}
 	
     columnWidths[columnKey] = @(currentWidth);
@@ -1293,8 +1340,17 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 - (float)_widthForColumn:(NSUInteger)columnIndex
 {
     
-    NSString *column = [NSString stringWithFormat:@"column%lu", columnIndex];
-    if (columnIndex < columnWidths.count) {
+    NSString *column = nil;
+	if ([columnIndexNames count] > columnIndex) {
+		column = columnIndexNames[columnIndex];
+	}
+	
+	if (!column) {
+		column = [NSString stringWithFormat:@"column%lu", columnIndex];
+		columnIndexNames[columnIndex] = column;
+	}
+   
+	if (columnIndex < columnWidths.count) {
         return [columnWidths[column] floatValue];
     } else {
         return [self _setWidthForColumn:columnIndex];
@@ -1312,6 +1368,8 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
         float width = [[self dataSource] tableGrid:self setWidthForColumn:columnIndex];
         columnWidths[column] = COLUMNFLOATSIZE(width);
     
+		columnIndexNames[columnIndex] = column;
+		
         return width;
         
     } else {

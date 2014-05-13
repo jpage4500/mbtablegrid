@@ -97,6 +97,12 @@
 					[headerCell setState:NSOffState];
 				}
 				
+				if (column == self.indicatorImageColumn) {
+					[headerCell setSortIndicatorImage:self.indicatorImage];
+				} else {
+					[headerCell setSortIndicatorImage:nil];
+				}
+				
 				[headerCell setStringValue:[[self tableGrid] _headerStringForColumn:column]];
 				[headerCell drawWithFrame:headerRect inView:self];
                 
@@ -193,7 +199,9 @@
                     }
                 }
             }
-        }
+        } else if ([theEvent clickCount] == 2) {
+			
+		}
         
         // Pass the event back to the MBTableGrid (Used to give First Responder status)
         [[self tableGrid] mouseDown:theEvent];

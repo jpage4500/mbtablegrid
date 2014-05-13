@@ -655,8 +655,8 @@
 	[image setFlipped:YES];
 	[image lockFocus];
 	
-	NSRect horizontalInner = NSMakeRect(7.0, 2.0, 2.0, 12.0);
-	NSRect verticalInner = NSMakeRect(2.0, 7.0, 12.0, 2.0);
+	NSRect horizontalInner = NSMakeRect(7.0, 1.0, 1.0, 12.0);
+	NSRect verticalInner = NSMakeRect(1.0, 6.0, 12.0, 1.0);
 	
 	NSRect horizontalOuter = NSInsetRect(horizontalInner, -1.0, -1.0);
 	NSRect verticalOuter = NSInsetRect(verticalInner, -1.0, -1.0);
@@ -664,14 +664,14 @@
 	// Set the shadow
 	NSShadow *shadow = [[NSShadow alloc] init];
 	[shadow setShadowColor:[NSColor colorWithDeviceWhite:0.0 alpha:0.8]];
-	[shadow setShadowBlurRadius:2.0];
+	[shadow setShadowBlurRadius:1.0];
 	[shadow setShadowOffset:NSMakeSize(0, -1.0)];
 	
 	[[NSGraphicsContext currentContext] saveGraphicsState];
 	
 	[shadow set];
 	
-	[[NSColor blackColor] set];
+	[[NSColor whiteColor] set];
 	NSRectFill(horizontalOuter);
 	NSRectFill(verticalOuter);
 	

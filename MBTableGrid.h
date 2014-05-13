@@ -24,6 +24,7 @@
  */
 
 #import <Cocoa/Cocoa.h>
+#import <QuartzCore/QuartzCore.h>
 
 @class MBTableGridHeaderView, MBTableGridHeaderCell, MBTableGridContentView;
 @protocol MBTableGridDelegate, MBTableGridDataSource;
@@ -137,6 +138,7 @@ typedef enum {
 	MBTableGridEdge stickyRowEdge;
     
     NSMutableDictionary *columnWidths;
+	NSMutableArray *columnIndexNames;
         
 }
 
@@ -261,6 +263,32 @@ typedef enum {
  */
 
 @property (nonatomic, assign) NSUInteger numberOfColumns;
+
+#pragma mar -
+#pragma mark Sort Indicators
+
+/**
+ * @brief		Sets the indicator image for the specified column.
+ *				This is used for indicating which direction the
+ *				column is being sorted by.
+ *
+ * @param		anImage			The sort indicator image.
+ * @param		columnIndex		The index of the column.
+ *
+ * @return		The header value for the row.
+ */
+- (void)setIndicatorImage:(NSImage *)anImage inColumn:(NSUInteger)columnIndex;
+
+/**
+ * @brief		Returns the sort indicator image
+ *				for the specified column.
+ *
+ * @param		columnIndex		The index of the column.
+ *
+ * @return		The sort indicator image for the column.
+ */
+- (NSImage *)indicatorImageInColumn:(NSUInteger)columnIndex;
+
 
 /**
  * @}
@@ -632,7 +660,7 @@ typedef enum {
  *
  * @see			tableGrid:setWidthForColumn:
  */
-- (float)tableGrid:(MBTableGrid *)aTableGrid withForColumn:(NSUInteger)columnIndex;
+- (float)tableGrid:(MBTableGrid *)aTableGrid widthForColumn:(NSUInteger)columnIndex;
 
 @optional
 
@@ -935,6 +963,19 @@ typedef enum {
  * @details		\c aNotification is an \c MBTableGridDidChangeSelectionNotification.
  */
 - (void)tableGridDidChangeSelection:(NSNotification *)aNotification;
+
+/**
+ * @brief		Tells the delegate that the specified column header was double-clicked
+ *
+ * @param		aTableGrid		The table grid object informing the delegate
+ *								about the double-click event
+ * @param		columnIndex		The selected column in \c aTableGrid.
+ *
+ *
+ * @see			tableGrid:willSelectColumnsAtIndexPath:
+ */
+- (void)tableGrid:(MBTableGrid *)aTableGrid didDoubleClickColumn:(NSUInteger)columnIndex;
+
 
 /**
  * @}
