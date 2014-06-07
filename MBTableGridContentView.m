@@ -107,9 +107,9 @@
 	NSUInteger column = 0;
 	while (column < numberOfColumns) {
 		NSRect columnRect = [self rectOfColumn:column];
-		if (firstColumn == NSNotFound && NSMinX([self visibleRect]) >= NSMinX(columnRect) && NSMinX([self visibleRect]) <= NSMaxX(columnRect)) {
+		if (firstColumn == NSNotFound && NSMinX(rect) >= NSMinX(columnRect) && NSMinX(rect) <= NSMaxX(columnRect)) {
 			firstColumn = column;
-		} else if (firstColumn != NSNotFound && NSMaxX([self visibleRect]) >= NSMinX(columnRect) && NSMaxX([self visibleRect]) <= NSMaxX(columnRect)) {
+		} else if (firstColumn != NSNotFound && NSMaxX(rect) >= NSMinX(columnRect) && NSMaxX(rect) <= NSMaxX(columnRect)) {
 			lastColumn = column;
 			break;
 		}
@@ -120,9 +120,9 @@
 	NSUInteger row = 0;
 	while (row < numberOfRows) {
 		NSRect rowRect = [self rectOfRow:row];
-		if (firstRow == NSNotFound && NSMinY([self visibleRect]) >= rowRect.origin.x && NSMinY([self visibleRect]) <= NSMaxY(rowRect)) {
+		if (firstRow == NSNotFound && NSMinY(rect) >= rowRect.origin.x && NSMinY(rect) <= NSMaxY(rowRect)) {
 			firstRow = row;
-		} else if (firstRow != NSNotFound && NSMaxY([self visibleRect]) >= NSMinY(rowRect) && NSMaxY([self visibleRect]) <= NSMaxY(rowRect)) {
+		} else if (firstRow != NSNotFound && NSMaxY(rect) >= NSMinY(rowRect) && NSMaxY(rect) <= NSMaxY(rowRect)) {
 			lastRow = row;
 			break;
 		}
