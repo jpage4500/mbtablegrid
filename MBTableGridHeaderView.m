@@ -106,15 +106,16 @@
 				[headerCell setStringValue:[[self tableGrid] _headerStringForColumn:column]];
 				[headerCell drawWithFrame:headerRect inView:self];
                 
-                // Create new tracking area for resizing columns
-                NSRect resizeRect = NSMakeRect(NSMinX(headerRect) + NSWidth(headerRect) - 2, NSMinY(headerRect), 5, NSHeight(headerRect));
-                NSTrackingArea *resizeTrackingArea = [[NSTrackingArea alloc] initWithRect:resizeRect options:(NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways) owner:self userInfo:nil];
-                
-                // keep track of tracking areas and add tracking to view
-                [trackingAreas addObject:resizeTrackingArea];
-                [self addTrackingArea:resizeTrackingArea];
-                
 			}
+			
+			// Create new tracking area for resizing columns
+			NSRect resizeRect = NSMakeRect(NSMinX(headerRect) + NSWidth(headerRect) - 2, NSMinY(headerRect), 5, NSHeight(headerRect));
+			NSTrackingArea *resizeTrackingArea = [[NSTrackingArea alloc] initWithRect:resizeRect options:(NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways) owner:self userInfo:nil];
+			
+			// keep track of tracking areas and add tracking to view
+			[trackingAreas addObject:resizeTrackingArea];
+			[self addTrackingArea:resizeTrackingArea];
+			
 			column++;
 		}
         
