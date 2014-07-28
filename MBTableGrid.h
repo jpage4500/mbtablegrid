@@ -139,7 +139,7 @@ typedef enum {
     
     NSMutableDictionary *columnWidths;
 	NSMutableArray *columnIndexNames;
-        
+	
 }
 
 #pragma mark -
@@ -190,7 +190,17 @@ typedef enum {
  * @details		This method resizes the column and updates the views
  *
  */
-- (void) resizeColumnWithIndex:(NSUInteger)columnIndex withDistance:(float)distance;
+- (void) resizeColumnWithIndex:(NSUInteger)columnIndex withDistance:(float)distance location:(NSPoint)location;
+
+/**
+ * @brief		Cache of column rects
+ *
+ * @return		A mutable dictionary containing the records for all the rows keyed by column index number
+ *
+ */
+
+@property (nonatomic, strong) NSMutableDictionary *columnRects;
+
 
 /**
  * @}

@@ -515,19 +515,32 @@
 
 - (NSRect)rectOfColumn:(NSUInteger)columnIndex
 {
-    
-    float width = [[self tableGrid] _widthForColumn:columnIndex];
-
-	NSRect rect = NSMakeRect(0, 0, width, [self frame].size.height);
-	//rect.origin.x += 60.0 * columnIndex;
-	
-	NSUInteger i = 0;
-	while(i < columnIndex) {
-        float headerWidth = [[self tableGrid] _widthForColumn:i];
-		rect.origin.x += headerWidth;
-		i++;
+	NSRect rect = NSZeroRect;
+	BOOL foundRect = NO;
+	if (columnIndex < [self tableGrid].numberOfColumns) {
+		NSValue *cachedRectValue = [self tableGrid].columnRects[@(columnIndex)];
+		if (cachedRectValue) {
+			rect = [cachedRectValue rectValue];
+			foundRect = YES;
+		}
 	}
 	
+	if (!foundRect) {
+		float width = [[self tableGrid] _widthForColumn:columnIndex];
+		
+		rect = NSMakeRect(0, 0, width, [self frame].size.height);
+		//rect.origin.x += 60.0 * columnIndex;
+		
+		NSUInteger i = 0;
+		while(i < columnIndex) {
+			float headerWidth = [[self tableGrid] _widthForColumn:i];
+			rect.origin.x += headerWidth;
+			i++;
+		}
+	
+		[self tableGrid].columnRects[@(columnIndex)] = [NSValue valueWithRect:rect];
+
+	}
 	return rect;
 }
 

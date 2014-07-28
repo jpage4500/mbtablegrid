@@ -224,7 +224,8 @@
         lastMouseDraggingLocation = loc;
         
         // Resize column and resize views
-        [self.tableGrid resizeColumnWithIndex:draggingColumnIndex withDistance:dragDistance];
+		
+        [self.tableGrid resizeColumnWithIndex:draggingColumnIndex withDistance:dragDistance location:loc];
                
     } else {
     
@@ -284,7 +285,11 @@
     if (canResize) {
         
         isResizing = NO;
-        
+		
+		// update cache of column rects
+		
+		[[self tableGrid].columnRects removeAllObjects];
+		
     } else {
         
         // If we only clicked on a header that was part of a bigger selection, select it

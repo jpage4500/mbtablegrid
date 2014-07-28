@@ -156,6 +156,8 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 		stickyRowEdge = MBTableGridTopEdge;
 
 		shouldOverrideModifiers = NO;
+		
+		self.columnRects = [NSMutableDictionary dictionary];
 	}
 	return self;
 }
@@ -239,38 +241,52 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 
 #pragma mark Resize scrollview content size
 
-- (void)resizeColumnWithIndex:(NSUInteger)columnIndex withDistance:(float)distance {
+- (void)resizeColumnWithIndex:(NSUInteger)columnIndex withDistance:(float)distance location:(NSPoint)location {
 	// Get column key
 	NSString *columnKey = nil;
 	if ([columnIndexNames count] > columnIndex) {
 		columnKey = columnIndexNames[columnIndex];
 	}
-
+	
 	if (!columnKey) {
 		columnKey = [NSString stringWithFormat:@"column%lu", columnIndex];
 	}
-
+	
+	// flush rect cache for this column because we're changing its size
+	[self.columnRects removeAllObjects];
+	
+	NSRect columnRect = [self rectOfColumn:columnIndex];
+	
 	// Set new width of column
 	float currentWidth = [columnWidths[columnKey] floatValue];
-	currentWidth += distance;
-
-	CGFloat minColumnWidth = MBTableHeaderMinimumColumnWidth;
-
-	if (columnHeaderView.indicatorImage && columnHeaderView.indicatorImageColumn == columnIndex) {
-		minColumnWidth += columnHeaderView.indicatorImage.size.width + 2.0f;
+	
+	if (location.x > columnRect.origin.x) {
+		
+		currentWidth += distance;
+		
+		CGFloat minColumnWidth = MBTableHeaderMinimumColumnWidth;
+		
+		if (columnHeaderView.indicatorImage && columnHeaderView.indicatorImageColumn == columnIndex) {
+			minColumnWidth += columnHeaderView.indicatorImage.size.width + 2.0f;
+		}
+		
+		if (currentWidth < minColumnWidth) {
+			currentWidth = minColumnWidth;
+		}
+		
+	} else {
+		currentWidth = MBTableHeaderMinimumColumnWidth;
 	}
-
-	if (currentWidth < minColumnWidth) {
-		currentWidth = minColumnWidth;
-	}
-
+	
+	
 	columnWidths[columnKey] = @(currentWidth);
-
+	
 	// Update views with new sizes
 	[contentView setFrameSize:NSMakeSize(NSWidth(contentView.frame) + distance, NSHeight(contentView.frame))];
 	[columnHeaderView setFrameSize:NSMakeSize(NSWidth(columnHeaderView.frame) + distance, NSHeight(columnHeaderView.frame))];
 	[contentView setNeedsDisplay:YES];
 	[columnHeaderView setNeedsDisplayInRect:columnHeaderView.frame];
+	
 }
 
 - (void)registerForDraggedTypes:(NSArray *)pboardTypes {
@@ -1025,7 +1041,8 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 	NSRect columnHeaderFrame = [columnHeaderView frame];
 	columnHeaderFrame.size.width = contentRect.size.width;
 	if (![[contentScrollView verticalScroller] isHidden]) {
-		columnHeaderFrame.size.width += [NSScroller scrollerWidth];
+		columnHeaderFrame.size.width += [NSScroller scrollerWidthForControlSize:NSRegularControlSize
+																  scrollerStyle:NSScrollerStyleOverlay];
 	}
 	[columnHeaderView setFrameSize:columnHeaderFrame.size];
 
@@ -1033,7 +1050,8 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 	NSRect rowHeaderFrame = [rowHeaderView frame];
 	rowHeaderFrame.size.height = contentRect.size.height;
 	if (![[contentScrollView horizontalScroller] isHidden]) {
-		columnHeaderFrame.size.height += [NSScroller scrollerWidth];
+		columnHeaderFrame.size.height += [NSScroller scrollerWidthForControlSize:NSRegularControlSize
+																   scrollerStyle:NSScrollerStyleOverlay];
 	}
 	[rowHeaderView setFrameSize:rowHeaderFrame.size];
 
@@ -1051,7 +1069,8 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 
 		// If the scrollbar is visible, don't include it in the rect
 		if (![[contentScrollView horizontalScroller] isHidden]) {
-			rect.size.height -= [NSScroller scrollerWidth];
+			rect.size.height -= [NSScroller scrollerWidthForControlSize:NSRegularControlSize
+														  scrollerStyle:NSScrollerStyleOverlay];
 		}
 	}
 
