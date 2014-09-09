@@ -623,6 +623,18 @@ typedef enum {
 @optional
 
 /**
+ *  @brief      Returns the formatter associated with the specified column.
+ *
+ *  @param      aTableGrid  The table grid that sent the message.
+ *  @param      columnIndex A column in \c aTableGrid.
+ *
+ *  @return     The formatter for the specified column to use when displaying cell values
+ */
+- (NSFormatter *)tableGrid:(MBTableGrid *)aTableGrid formatterForColumn:(NSUInteger)columnIndex;
+
+@optional
+
+/**
  * @brief		Returns the background color for the specified column and row.
  *
  * @param		aTableGrid		The table grid that sent the message.

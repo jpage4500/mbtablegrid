@@ -39,6 +39,14 @@
     
 	columns = [[NSMutableArray alloc] initWithCapacity:500];
 
+	NSNumberFormatter *decimalFormatter = [[NSNumberFormatter alloc] init];
+	decimalFormatter.numberStyle = NSNumberFormatterCurrencyStyle;
+	decimalFormatter.lenient = YES;
+	NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+	dateFormatter.dateStyle = NSDateFormatterShortStyle;
+	dateFormatter.timeStyle = NSDateFormatterShortStyle;
+	formatters = @[decimalFormatter, dateFormatter];
+
 	// Add 10 columns
 	int i = 0;
 	while (i < 100) {
@@ -117,6 +125,15 @@
 	id value = column[rowIndex];
 	
 	return value;
+}
+
+- (NSFormatter *)tableGrid:(MBTableGrid *)aTableGrid formatterForColumn:(NSUInteger)columnIndex
+{
+    if (columnIndex >= [columns count]) {
+        return nil;
+    }
+
+    return formatters[columnIndex % [formatters count]];
 }
 
 - (void)tableGrid:(MBTableGrid *)aTableGrid setObjectValue:(id)anObject forColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex

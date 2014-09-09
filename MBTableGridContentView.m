@@ -34,6 +34,7 @@
 
 @interface MBTableGrid (Private)
 - (id)_objectValueForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
+- (NSFormatter *)_formatterForColumn:(NSUInteger)columnIndex;
 - (void)_setObjectValue:(id)value forColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (BOOL)_canEditCellAtColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (void)_setStickyColumn:(MBTableGridEdge)stickyColumn row:(MBTableGridEdge)stickyRow;
@@ -139,7 +140,8 @@
                 
                 NSColor *backgroundColor = [[self tableGrid] _backgroundColorForColumn:column row:row] ?: [NSColor whiteColor];
                 
-                
+				[_cell setFormatter:nil]; // An exception is raised if the formatter is not set to nil before changing at runtime
+				[_cell setFormatter:[[self tableGrid] _formatterForColumn:column]];
 				[_cell setObjectValue:[[self tableGrid] _objectValueForColumn:column row:row]];
 				[_cell drawWithFrame:cellFrame inView:self withBackgroundColor:backgroundColor];// Draw background color
                 
@@ -411,8 +413,16 @@
 	[[self window] makeFirstResponder:[self tableGrid]];
 	
 	NSString *value = [[[aNotification object] string] copy];
-	[[self tableGrid] _setObjectValue:value forColumn:editedColumn row:editedRow];
-	
+	id objectValue;
+	NSString *errorDescription;
+	BOOL success = [[[self tableGrid] _formatterForColumn:editedColumn] getObjectValue:&objectValue forString:value errorDescription:&errorDescription];
+	if (success) {
+		[[self tableGrid] _setObjectValue:objectValue forColumn:editedColumn row:editedRow];
+	}
+	else {
+		// TODO: Delegate method for invalid string values?
+	}
+
 	editedColumn = NSNotFound;
 	editedRow = NSNotFound;
 	
