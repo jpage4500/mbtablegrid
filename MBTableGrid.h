@@ -1052,6 +1052,16 @@ typedef enum {
 - (BOOL)tableGrid:(MBTableGrid *)aTableGrid shouldEditColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 
 /**
+ *  @brief      Informs the delegate that an invalid string was entered in a cell
+ *
+ *  @param      aTableGrid       The table grid that contains the cell
+ *  @param      columnIndex      The column of the cell
+ *  @param      rowIndex         The row of the cell
+ *  @param      errorDescription The error description of why the string was invalid
+ */
+- (void)tableGrid:(MBTableGrid *)aTableGrid userDidEnterInvalidStringInColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex errorDescription:(NSString *)errorDescription;
+
+/**
  * @}
  */
 

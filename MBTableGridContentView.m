@@ -42,6 +42,7 @@
 - (id)_backgroundColorForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (MBTableGridEdge)_stickyColumn;
 - (MBTableGridEdge)_stickyRow;
+- (void)_userDidEnterInvalidStringInColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex errorDescription:(NSString *)errorDescription;
 @end
 
 @interface MBTableGridContentView (Cursors)
@@ -420,7 +421,7 @@
 		[[self tableGrid] _setObjectValue:objectValue forColumn:editedColumn row:editedRow];
 	}
 	else {
-		// TODO: Delegate method for invalid string values?
+		[[self tableGrid] _userDidEnterInvalidStringInColumn:editedColumn row:editedRow errorDescription:errorDescription];
 	}
 
 	editedColumn = NSNotFound;

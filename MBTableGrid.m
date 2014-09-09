@@ -57,6 +57,7 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 - (float)_setWidthForColumn:(NSUInteger)columnIndex;
 - (id)_backgroundColorForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (BOOL)_canEditCellAtColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
+- (void)_userDidEnterInvalidStringInColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex errorDescription:(NSString *)errorDescription;
 @end
 
 @interface MBTableGrid (DragAndDrop)
@@ -1433,6 +1434,12 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 
 - (MBTableGridEdge)_stickyRow {
 	return stickyRowEdge;
+}
+
+- (void)_userDidEnterInvalidStringInColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex errorDescription:(NSString *)errorDescription {
+    if ([[self delegate] respondsToSelector:@selector(tableGrid:userDidEnterInvalidStringInColumn:row:errorDescription:)]) {
+        [[self delegate] tableGrid:self userDidEnterInvalidStringInColumn:columnIndex row:rowIndex errorDescription:errorDescription];
+    }
 }
 
 @end

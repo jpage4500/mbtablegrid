@@ -230,6 +230,10 @@
 	NSLog(@"moved");
 }
 
+- (void)tableGrid:(MBTableGrid *)aTableGrid userDidEnterInvalidStringInColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex errorDescription:(NSString *)errorDescription {
+	NSLog(@"Invalid input at %lu,%lu: %@", (unsigned long)columnIndex, (unsigned long)rowIndex, errorDescription);
+}
+
 #pragma mark -
 #pragma mark Subclass Methods
 
