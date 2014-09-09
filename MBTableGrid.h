@@ -623,6 +623,18 @@ typedef enum {
 @optional
 
 /**
+ *  @brief      Returns the formatter associated with the specified column.
+ *
+ *  @param      aTableGrid  The table grid that sent the message.
+ *  @param      columnIndex A column in \c aTableGrid.
+ *
+ *  @return     The formatter for the specified column to use when displaying cell values
+ */
+- (NSFormatter *)tableGrid:(MBTableGrid *)aTableGrid formatterForColumn:(NSUInteger)columnIndex;
+
+@optional
+
+/**
  * @brief		Returns the background color for the specified column and row.
  *
  * @param		aTableGrid		The table grid that sent the message.
@@ -1038,6 +1050,16 @@ typedef enum {
  * @return		\c YES to permit \c aTableGrid to edit the specified cell, \c NO to deny permission.
  */
 - (BOOL)tableGrid:(MBTableGrid *)aTableGrid shouldEditColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
+
+/**
+ *  @brief      Informs the delegate that an invalid string was entered in a cell
+ *
+ *  @param      aTableGrid       The table grid that contains the cell
+ *  @param      columnIndex      The column of the cell
+ *  @param      rowIndex         The row of the cell
+ *  @param      errorDescription The error description of why the string was invalid
+ */
+- (void)tableGrid:(MBTableGrid *)aTableGrid userDidEnterInvalidStringInColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex errorDescription:(NSString *)errorDescription;
 
 /**
  * @}
