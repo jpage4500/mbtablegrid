@@ -129,7 +129,7 @@
 
 - (NSFormatter *)tableGrid:(MBTableGrid *)aTableGrid formatterForColumn:(NSUInteger)columnIndex
 {
-    if (columnIndex >= [columns count]) {
+    if (columnIndex >= 4) {
         return nil;
     }
 

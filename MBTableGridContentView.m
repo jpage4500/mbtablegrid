@@ -413,13 +413,16 @@
 	// Give focus back to the table grid (the field editor took it)
 	[[self window] makeFirstResponder:[self tableGrid]];
 	
-	NSString *value = [[[aNotification object] string] copy];
+	NSString *stringValue = [[[aNotification object] string] copy];
 	id objectValue;
 	NSString *errorDescription;
 	NSFormatter *formatter = [[self tableGrid] _formatterForColumn:editedColumn];
-	BOOL success = [formatter getObjectValue:&objectValue forString:value errorDescription:&errorDescription];
-	if ((formatter && success) || !formatter) {
+	BOOL success = [formatter getObjectValue:&objectValue forString:stringValue errorDescription:&errorDescription];
+	if (formatter && success) {
 		[[self tableGrid] _setObjectValue:objectValue forColumn:editedColumn row:editedRow];
+	}
+	else if (!formatter) {
+		[[self tableGrid] _setObjectValue:stringValue forColumn:editedColumn row:editedRow];
 	}
 	else {
 		[[self tableGrid] _userDidEnterInvalidStringInColumn:editedColumn row:editedRow errorDescription:errorDescription];
