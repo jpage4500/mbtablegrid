@@ -30,6 +30,7 @@
 	IBOutlet MBTableGrid *tableGrid;
 	
 	NSMutableArray *columns;
+	NSArray *formatters;
     NSArray *columnSampleWidths;
 }
 
