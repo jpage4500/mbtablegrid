@@ -416,8 +416,9 @@
 	NSString *value = [[[aNotification object] string] copy];
 	id objectValue;
 	NSString *errorDescription;
-	BOOL success = [[[self tableGrid] _formatterForColumn:editedColumn] getObjectValue:&objectValue forString:value errorDescription:&errorDescription];
-	if (success) {
+	NSFormatter *formatter = [[self tableGrid] _formatterForColumn:editedColumn];
+	BOOL success = [formatter getObjectValue:&objectValue forString:value errorDescription:&errorDescription];
+	if ((formatter && success) || !formatter) {
 		[[self tableGrid] _setObjectValue:objectValue forColumn:editedColumn row:editedRow];
 	}
 	else {
