@@ -63,6 +63,25 @@
 	// Draw the bottom border
 	NSRect bottomLine = NSMakeRect(NSMinX(cellFrame), NSMaxY(cellFrame)-1.0, NSWidth(cellFrame), 1.0);
 	NSRectFill(bottomLine);
+
+	// Draw arrows to indicate that this cell is edited with a popup menu.
+	// Also move the right edge of the cell frame to the left so that the
+	// interior is drawn inside and it doesn't overlap the arrows on the right.
+	if (self.editWithPopupMenu) {
+		NSImage *upArrowImage = [NSImage imageNamed:@"sort-desc"];
+		NSImage *downArrowImage = [NSImage imageNamed:@"sort-asc"];
+
+		CGFloat maxArrowWidth = fmax(upArrowImage.size.width, downArrowImage.size.width);
+		CGFloat arrowX = CGRectGetMaxX(cellFrame) - maxArrowWidth;
+		CGFloat upY = CGRectGetMaxY(cellFrame) - upArrowImage.size.height;
+		[upArrowImage drawInRect:NSMakeRect(arrowX, upY, upArrowImage.size.width, upArrowImage.size.height)];
+		CGFloat downY = CGRectGetMinY(cellFrame);
+		[downArrowImage drawInRect:NSMakeRect(arrowX, downY, downArrowImage.size.width, downArrowImage.size.height)];
+
+		CGRect slice, remainder;
+		CGRectDivide(cellFrame, &slice, &remainder, maxArrowWidth, CGRectMaxXEdge);
+		cellFrame = remainder;
+	}
     
 	[self drawInteriorWithFrame:cellFrame inView:controlView];
 }
