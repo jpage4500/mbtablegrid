@@ -52,6 +52,7 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 - (NSString *)_headerStringForRow:(NSUInteger)rowIndex;
 - (id)_objectValueForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (NSFormatter *)_formatterForColumn:(NSUInteger)columnIndex;
+- (NSArray *)_availableObjectValuesForColumn:(NSUInteger)columnIndex;
 - (void)_setObjectValue:(id)value forColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (float)_widthForColumn:(NSUInteger)columnIndex;
 - (float)_setWidthForColumn:(NSUInteger)columnIndex;
@@ -1367,6 +1368,13 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
         return [[self dataSource] tableGrid:self formatterForColumn:columnIndex];
     }
     return nil;
+}
+
+- (NSArray *)_availableObjectValuesForColumn:(NSUInteger)columnIndex {
+	if ([[self dataSource] respondsToSelector:@selector(tableGrid:availableObjectValuesForColumn:)]) {
+		return [[self dataSource] tableGrid:self availableObjectValuesForColumn:columnIndex];
+	}
+	return nil;
 }
 
 - (id)_backgroundColorForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex {
