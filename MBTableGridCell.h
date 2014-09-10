@@ -34,6 +34,8 @@
     
 }
 
+@property(nonatomic, assign) BOOL editWithPopupMenu;
+
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView withBackgroundColor:(NSColor *)backgroundColor;
 
 @end

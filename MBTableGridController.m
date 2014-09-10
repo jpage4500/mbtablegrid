@@ -129,11 +129,19 @@
 
 - (NSFormatter *)tableGrid:(MBTableGrid *)aTableGrid formatterForColumn:(NSUInteger)columnIndex
 {
-    if (columnIndex >= 4) {
+    if (columnIndex >= 2) {
         return nil;
     }
 
     return formatters[columnIndex % [formatters count]];
+}
+
+- (NSArray *)tableGrid:(MBTableGrid *)aTableGrid availableObjectValuesForColumn:(NSUInteger)columnIndex
+{
+	if (columnIndex == 2) {
+		return @[ @"Action & Adventure", @"Comedy", @"Romance", @"Thriller" ];
+	}
+	return nil;
 }
 
 - (void)tableGrid:(MBTableGrid *)aTableGrid setObjectValue:(id)anObject forColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex

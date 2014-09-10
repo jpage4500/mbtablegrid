@@ -35,6 +35,7 @@
 @interface MBTableGrid (Private)
 - (id)_objectValueForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (NSFormatter *)_formatterForColumn:(NSUInteger)columnIndex;
+- (NSArray *)_availableObjectValuesForColumn:(NSUInteger)columnIndex;
 - (void)_setObjectValue:(id)value forColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (BOOL)_canEditCellAtColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (void)_setStickyColumn:(MBTableGridEdge)stickyColumn row:(MBTableGridEdge)stickyRow;
@@ -143,9 +144,10 @@
                 
 				[_cell setFormatter:nil]; // An exception is raised if the formatter is not set to nil before changing at runtime
 				[_cell setFormatter:[[self tableGrid] _formatterForColumn:column]];
+				BOOL hasAvailableObjectValues = ([[self tableGrid] _availableObjectValuesForColumn:column] != nil);
+				[_cell setEditWithPopupMenu:hasAvailableObjectValues];
 				[_cell setObjectValue:[[self tableGrid] _objectValueForColumn:column row:row]];
 				[_cell drawWithFrame:cellFrame inView:self withBackgroundColor:backgroundColor];// Draw background color
-                
 			}
 			row++;
 		}
@@ -520,10 +522,37 @@
 	[cell setEditable:YES];
 	[cell setSelectable:YES];
 	[cell setObjectValue:[[self tableGrid] _objectValueForColumn:editedColumn row:editedRow]];
-	
+
+	// If a list of available object values is provided, display them in a popup menu
+	NSArray *availableObjectValues = [[self tableGrid] _availableObjectValuesForColumn:editedColumn];
 	NSRect cellFrame = [self frameOfCellAtColumn:editedColumn row:editedRow];
-	NSText *editor = [[self window] fieldEditor:YES forObject:self];
-	[cell editWithFrame:cellFrame inView:self editor:editor delegate:self event:nil];
+	if (availableObjectValues) {
+		NSMenu *menu = [[NSMenu alloc] init];
+		for (NSString *objectValue in availableObjectValues) {
+			NSMenuItem *item = [menu addItemWithTitle:objectValue action:@selector(cellPopupMenuItemSelected:) keyEquivalent:@""];
+			[item setTarget:self];
+		}
+		[menu popUpMenuPositioningItem:nil atLocation:cellFrame.origin inView:self];
+	}
+	// Otherwise edit the object value as a string
+	else {
+		NSText *editor = [[self window] fieldEditor:YES forObject:self];
+		[cell editWithFrame:cellFrame inView:self editor:editor delegate:self event:nil];
+	}
+}
+
+- (void)cellPopupMenuItemSelected:(NSMenuItem *)menuItem
+{
+	NSUInteger indexOfSelectedItem = [menuItem.menu indexOfItem:menuItem];
+	NSArray *availableObjectValues = [[self tableGrid] _availableObjectValuesForColumn:editedColumn];
+	if (indexOfSelectedItem < [availableObjectValues count]) {
+		id objectValue = availableObjectValues[indexOfSelectedItem];
+		[[[self tableGrid] cell] setObjectValue:objectValue];
+		[[self tableGrid] _setObjectValue:objectValue forColumn:editedColumn row:editedRow];
+	}
+
+	editedColumn = NSNotFound;
+	editedRow = NSNotFound;
 }
 
 #pragma mark Layout Support

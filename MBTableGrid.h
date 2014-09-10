@@ -635,6 +635,18 @@ typedef enum {
 @optional
 
 /**
+ *  @brief
+ *
+ *  @param aTableGrid  The table grid that sent the message.
+ *  @param columnIndex A column in \c aTableGrid.
+ *
+ *  @return An array of possible object values to represent in a popup button for a given column. Return nil if the cells in the column should not be edited with a popup button of available values, but should instead allow freeform string input. The count of the returned array should match that returned in tableGrid:availableUserStringsForColumn:.
+ */
+- (NSArray *)tableGrid:(MBTableGrid *)aTableGrid availableObjectValuesForColumn:(NSUInteger)columnIndex;
+
+@optional
+
+/**
  * @brief		Returns the background color for the specified column and row.
  *
  * @param		aTableGrid		The table grid that sent the message.
