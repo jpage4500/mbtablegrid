@@ -24,9 +24,18 @@
  */
 
 #import "MBTableGridController.h"
+#import "MBTableGridCell.h"
+#import "MBPopupButtonCell.h"
+#import "MBButtonCell.h"
 
 @interface NSMutableArray (SwappingAdditions)
 - (void)moveObjectsAtIndexes:(NSIndexSet *)indexes toIndex:(NSUInteger)index;
+@end
+
+@interface MBTableGridController()
+@property (nonatomic, strong) MBPopupButtonCell *popupCell;
+@property (nonatomic, strong) MBTableGridCell *textCell;
+@property (nonatomic, strong) MBButtonCell *checkboxCell;
 @end
 
 @implementation MBTableGridController
@@ -44,7 +53,7 @@
 	decimalFormatter.lenient = YES;
 	NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
 	dateFormatter.dateStyle = NSDateFormatterShortStyle;
-	dateFormatter.timeStyle = NSDateFormatterShortStyle;
+	dateFormatter.timeStyle = NSDateFormatterNoStyle;
 	formatters = @[decimalFormatter, dateFormatter];
 
 	// Add 10 columns
@@ -67,6 +76,26 @@
 	
 	// Register to receive text strings
 	[tableGrid registerForDraggedTypes:@[NSStringPboardType]];
+	
+	self.popupCell = [[MBPopupButtonCell alloc] initTextCell:@""];
+	self.popupCell.bordered = NO;
+	self.popupCell.controlSize = NSSmallControlSize;
+	self.popupCell.font = [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]];
+	NSArray *availableObjectValues = @[ @"Action & Adventure", @"Comedy", @"Romance", @"Thriller" ];
+	NSMenu *menu = [[NSMenu alloc] init];
+	for (NSString *objectValue in availableObjectValues) {
+		NSMenuItem *item = [menu addItemWithTitle:objectValue action:@selector(cellPopupMenuItemSelected:) keyEquivalent:@""];
+		[item setTarget:self];
+	}
+	self.popupCell.menu = menu;
+	
+	
+	self.textCell = [[MBTableGridCell alloc] initTextCell:@""];
+	
+	self.checkboxCell = [[MBButtonCell alloc] init];
+	self.checkboxCell.state = NSOffState;
+	[self.checkboxCell setButtonType:NSSwitchButton];
+	
 }
 
 
@@ -110,6 +139,10 @@
 	return [columns count];
 }
 
+- (NSString *)tableGrid:(MBTableGrid *)aTableGrid headerStringForColumn:(NSUInteger)columnIndex {
+	return [NSString stringWithFormat:@"Column %lu", columnIndex];
+}
+
 - (id)tableGrid:(MBTableGrid *)aTableGrid objectValueForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex
 {
 	if (columnIndex >= [columns count]) {
@@ -134,6 +167,20 @@
     }
 
     return formatters[columnIndex % [formatters count]];
+}
+
+- (NSCell *)tableGrid:(MBTableGrid *)aTableGrid cellForColumn:(NSUInteger)columnIndex {
+	NSCell *cell = nil;
+
+	if (columnIndex == 2) {
+		cell = self.popupCell;
+	} else if (columnIndex == 3) {
+		cell = self.checkboxCell;
+	} else {
+		cell = self.textCell;
+	}
+	
+	return cell;
 }
 
 - (NSArray *)tableGrid:(MBTableGrid *)aTableGrid availableObjectValuesForColumn:(NSUInteger)columnIndex
@@ -172,8 +219,8 @@
 
 -(NSColor *)tableGrid:(MBTableGrid *)aTableGrid backgroundColorForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex
 {
-    if (rowIndex % 2 && columnIndex % 2)
-        return [NSColor colorWithDeviceRed:1.0f green:0.5f blue:0.5f alpha:1.0f];
+    if (rowIndex % 2)
+        return [NSColor colorWithDeviceWhite:0.950 alpha:1.000];
     else
         return nil;
 }

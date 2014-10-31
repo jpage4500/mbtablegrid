@@ -27,7 +27,8 @@
 
 #import "MBTableGrid.h"
 #import "MBTableGridCell.h"
-
+#import "MBPopupButtonCell.h"
+#import "MBButtonCell.h"
 
 #define kGRAB_HANDLE_HALF_SIDE_LENGTH 2.0f
 #define kGRAB_HANDLE_SIDE_LENGTH 4.0f
@@ -35,6 +36,7 @@
 @interface MBTableGrid (Private)
 - (id)_objectValueForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (NSFormatter *)_formatterForColumn:(NSUInteger)columnIndex;
+- (NSCell *)_cellForColumn:(NSUInteger)columnIndex;
 - (NSArray *)_availableObjectValuesForColumn:(NSUInteger)columnIndex;
 - (void)_setObjectValue:(id)value forColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (BOOL)_canEditCellAtColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
@@ -86,10 +88,10 @@
 		
 		isDraggingColumnOrRow = NO;
 		
-		_cell = [[MBTableGridCell alloc] initTextCell:@""];
-        [_cell setBordered:YES];
-		[_cell setScrollable:YES];
-		[_cell setLineBreakMode:NSLineBreakByTruncatingTail];
+		_defaultCell = [[MBTableGridCell alloc] initTextCell:@""];
+        [_defaultCell setBordered:YES];
+		[_defaultCell setScrollable:YES];
+		[_defaultCell setLineBreakMode:NSLineBreakByTruncatingTail];
 	}
 	return self;
 }
@@ -141,13 +143,24 @@
 			if ([self needsToDrawRect:cellFrame] && !(row == editedRow && column == editedColumn)) {
                 
                 NSColor *backgroundColor = [[self tableGrid] _backgroundColorForColumn:column row:row] ?: [NSColor whiteColor];
-                
+				
+				NSCell *_cell = [[self tableGrid] _cellForColumn:column];
+
+				if (!_cell) {
+					_cell = _defaultCell;
+				}
+				
 				[_cell setFormatter:nil]; // An exception is raised if the formatter is not set to nil before changing at runtime
 				[_cell setFormatter:[[self tableGrid] _formatterForColumn:column]];
-				BOOL hasAvailableObjectValues = ([[self tableGrid] _availableObjectValuesForColumn:column] != nil);
-				[_cell setEditWithPopupMenu:hasAvailableObjectValues];
 				[_cell setObjectValue:[[self tableGrid] _objectValueForColumn:column row:row]];
-				[_cell drawWithFrame:cellFrame inView:self withBackgroundColor:backgroundColor];// Draw background color
+				
+				if ([_cell isKindOfClass:[MBPopupButtonCell class]]) {
+					MBPopupButtonCell *cell = (MBPopupButtonCell *)_cell;
+					[cell drawWithFrame:cellFrame inView:self withBackgroundColor:backgroundColor];// Draw background color
+				} else {
+					MBTableGridCell *cell = (MBTableGridCell *)_cell;
+					[cell drawWithFrame:cellFrame inView:self withBackgroundColor:backgroundColor];// Draw background color
+				}
 			}
 			row++;
 		}
@@ -279,8 +292,17 @@
 		// Pass the event back to the MBTableGrid (Used to give First Responder status)
 		[[self tableGrid] mouseDown:theEvent];
 		
-		// Single click
-		if(([theEvent modifierFlags] & NSShiftKeyMask) && [self tableGrid].allowsMultipleSelection) {
+		// Popup or Button cells
+		
+		NSUInteger selectedColumn = [[self tableGrid].selectedColumnIndexes firstIndex];
+		NSUInteger selectedRow = [[self tableGrid].selectedRowIndexes firstIndex];
+		
+		if (selectedColumn == mouseDownColumn && selectedRow == mouseDownRow) {
+			
+			[self editSelectedCell:self];
+			[self setNeedsDisplay:YES];
+			
+		} else if(([theEvent modifierFlags] & NSShiftKeyMask) && [self tableGrid].allowsMultipleSelection) {
 			// If the shift key was held down, extend the selection
 			NSUInteger stickyColumn = [[self tableGrid].selectedColumnIndexes firstIndex];
 			NSUInteger stickyRow = [[self tableGrid].selectedRowIndexes firstIndex];
@@ -518,24 +540,33 @@
 		[self tableGrid].selectedRowIndexes = [NSIndexSet indexSetWithIndex:editedRow];
 	}
 	
-	NSTextFieldCell *cell = [[self tableGrid] cell];
+	NSRect cellFrame = [self frameOfCellAtColumn:editedColumn row:editedRow];
+
+	NSCell *cell = [[self tableGrid] _cellForColumn:editedColumn];
 	[cell setEditable:YES];
 	[cell setSelectable:YES];
-	[cell setObjectValue:[[self tableGrid] _objectValueForColumn:editedColumn row:editedRow]];
+	
+	id currentValue = [[self tableGrid] _objectValueForColumn:editedColumn row:editedRow];
 
-	// If a list of available object values is provided, display them in a popup menu
-	NSArray *availableObjectValues = [[self tableGrid] _availableObjectValuesForColumn:editedColumn];
-	NSRect cellFrame = [self frameOfCellAtColumn:editedColumn row:editedRow];
-	if (availableObjectValues) {
-		NSMenu *menu = [[NSMenu alloc] init];
-		for (NSString *objectValue in availableObjectValues) {
-			NSMenuItem *item = [menu addItemWithTitle:objectValue action:@selector(cellPopupMenuItemSelected:) keyEquivalent:@""];
-			[item setTarget:self];
+	if ([cell isKindOfClass:[MBPopupButtonCell class]]) {
+		MBPopupButtonCell *popupCell = (MBPopupButtonCell *)cell;
+		[popupCell selectItemWithTitle:currentValue];
+		
+		NSMenu *menu = cell.menu;
+		for (NSMenuItem *item in menu.itemArray) {
+			item.action = @selector(cellPopupMenuItemSelected:);
+			item.target = self;
 		}
-		[menu popUpMenuPositioningItem:nil atLocation:cellFrame.origin inView:self];
-	}
+		[cell.menu popUpMenuPositioningItem:nil atLocation:cellFrame.origin inView:self];
+
+	} else if ([cell isKindOfClass:[MBButtonCell class]]) {
+		
+		cell.objectValue = @(![cell.objectValue boolValue]);
+		[[self tableGrid] _setObjectValue:cell.objectValue forColumn:editedColumn row:editedRow];
+		
+
 	// Otherwise edit the object value as a string
-	else {
+	} else {
 		NSText *editor = [[self window] fieldEditor:YES forObject:self];
 		[cell editWithFrame:cellFrame inView:self editor:editor delegate:self event:nil];
 	}
@@ -543,14 +574,12 @@
 
 - (void)cellPopupMenuItemSelected:(NSMenuItem *)menuItem
 {
-	NSUInteger indexOfSelectedItem = [menuItem.menu indexOfItem:menuItem];
-	NSArray *availableObjectValues = [[self tableGrid] _availableObjectValuesForColumn:editedColumn];
-	if (indexOfSelectedItem < [availableObjectValues count]) {
-		id objectValue = availableObjectValues[indexOfSelectedItem];
-		[[[self tableGrid] cell] setObjectValue:objectValue];
-		[[self tableGrid] _setObjectValue:objectValue forColumn:editedColumn row:editedRow];
-	}
-
+	MBPopupButtonCell *cell = (MBPopupButtonCell *)[[self tableGrid] _cellForColumn:editedColumn];
+	[cell selectItem:menuItem];
+	
+	id objectValue = menuItem.title;
+	[[self tableGrid] _setObjectValue:objectValue forColumn:editedColumn row:editedRow];
+	
 	editedColumn = NSNotFound;
 	editedRow = NSNotFound;
 }

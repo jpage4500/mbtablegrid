@@ -56,7 +56,7 @@
 	
 	BOOL isDraggingColumnOrRow;
 	
-	MBTableGridCell *_cell;
+	MBTableGridCell *_defaultCell;
     
     NSMutableArray *columnWidths;
     

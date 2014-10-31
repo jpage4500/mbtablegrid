@@ -52,6 +52,7 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 - (NSString *)_headerStringForRow:(NSUInteger)rowIndex;
 - (id)_objectValueForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (NSFormatter *)_formatterForColumn:(NSUInteger)columnIndex;
+- (NSCell *)_cellForColumn:(NSUInteger)columnIndex;
 - (NSArray *)_availableObjectValuesForColumn:(NSUInteger)columnIndex;
 - (void)_setObjectValue:(id)value forColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (float)_widthForColumn:(NSUInteger)columnIndex;
@@ -1227,12 +1228,12 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 
 - (void)_drawColumnHeaderBackgroundInRect:(NSRect)aRect {
 	if ([self needsToDrawRect:aRect]) {
-		NSColor *topGradientTop = [NSColor colorWithDeviceWhite:0.91 alpha:1.0];
-		NSColor *topGradientBottom = [NSColor colorWithDeviceWhite:0.89 alpha:1.0];
-		NSColor *bottomGradientTop = [NSColor colorWithDeviceWhite:0.85 alpha:1.0];
-		NSColor *bottomGradientBottom = [NSColor colorWithDeviceWhite:0.83 alpha:1.0];
-		NSColor *topColor = [NSColor colorWithDeviceWhite:0.95 alpha:1.0];
-		NSColor *borderColor = [NSColor colorWithDeviceWhite:0.65 alpha:1.0];
+		NSColor *topGradientTop = [NSColor colorWithDeviceWhite:1 alpha:1.0];
+		NSColor *topGradientBottom = [NSColor colorWithDeviceWhite:1 alpha:1.0];
+		NSColor *bottomGradientTop = [NSColor colorWithDeviceWhite:1 alpha:1.0];
+		NSColor *bottomGradientBottom = [NSColor colorWithDeviceWhite:1 alpha:1.0];
+		NSColor *topColor = [NSColor colorWithDeviceWhite:1 alpha:1.0];
+		NSColor *borderColor = [NSColor colorWithDeviceWhite:0.4 alpha:1.0];
 
 		NSGradient *topGradient = [[NSGradient alloc] initWithColors:@[topGradientTop, topGradientBottom]];
 		NSGradient *bottomGradient = [[NSGradient alloc] initWithColors:@[bottomGradientTop, bottomGradientBottom]];
@@ -1258,12 +1259,12 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 
 - (void)_drawRowHeaderBackgroundInRect:(NSRect)aRect {
 	if ([self needsToDrawRect:aRect]) {
-		NSColor *topGradientTop = [NSColor colorWithDeviceWhite:0.91 alpha:1.0];
-		NSColor *topGradientBottom = [NSColor colorWithDeviceWhite:0.89 alpha:1.0];
-		NSColor *bottomGradientTop = [NSColor colorWithDeviceWhite:0.85 alpha:1.0];
-		NSColor *bottomGradientBottom = [NSColor colorWithDeviceWhite:0.83 alpha:1.0];
+		NSColor *topGradientTop = [NSColor colorWithDeviceWhite:1 alpha:1.0];
+		NSColor *topGradientBottom = [NSColor colorWithDeviceWhite:1 alpha:1.0];
+		NSColor *bottomGradientTop = [NSColor colorWithDeviceWhite:1 alpha:1.0];
+		NSColor *bottomGradientBottom = [NSColor colorWithDeviceWhite:1 alpha:1.0];
 		NSColor *sideColor = [NSColor colorWithDeviceWhite:1.0 alpha:0.4];
-		NSColor *borderColor = [NSColor colorWithDeviceWhite:0.65 alpha:1.0];
+		NSColor *borderColor = [NSColor colorWithDeviceWhite:0.4 alpha:1.0];
 
 		NSGradient *topGradient = [[NSGradient alloc] initWithColors:@[topGradientTop, topGradientBottom]];
 		NSGradient *bottomGradient = [[NSGradient alloc] initWithColors:@[bottomGradientTop, bottomGradientBottom]];
@@ -1289,13 +1290,13 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 
 - (void)_drawCornerHeaderBackgroundInRect:(NSRect)aRect {
 	if ([self needsToDrawRect:aRect]) {
-		NSColor *topGradientTop = [NSColor colorWithDeviceWhite:0.91 alpha:1.0];
-		NSColor *topGradientBottom = [NSColor colorWithDeviceWhite:0.89 alpha:1.0];
-		NSColor *bottomGradientTop = [NSColor colorWithDeviceWhite:0.85 alpha:1.0];
-		NSColor *bottomGradientBottom = [NSColor colorWithDeviceWhite:0.83 alpha:1.0];
-		NSColor *topColor = [NSColor colorWithDeviceWhite:0.95 alpha:1.0];
+		NSColor *topGradientTop = [NSColor colorWithDeviceWhite:1.0 alpha:1.0];
+		NSColor *topGradientBottom = [NSColor colorWithDeviceWhite:1.0 alpha:1.0];
+		NSColor *bottomGradientTop = [NSColor colorWithDeviceWhite:1.0 alpha:1.0];
+		NSColor *bottomGradientBottom = [NSColor colorWithDeviceWhite:1.0 alpha:1.0];
+		NSColor *topColor = [NSColor colorWithDeviceWhite:1 alpha:1.0];
 		NSColor *sideColor = [NSColor colorWithDeviceWhite:1.0 alpha:0.4];
-		NSColor *borderColor = [NSColor colorWithDeviceWhite:0.65 alpha:1.0];
+		NSColor *borderColor = [NSColor colorWithDeviceWhite:0.4 alpha:1.0];
 
 		NSGradient *topGradient = [[NSGradient alloc] initWithColors:@[topGradientTop, topGradientBottom]];
 		NSGradient *bottomGradient = [[NSGradient alloc] initWithColors:@[bottomGradientTop, bottomGradientBottom]];
@@ -1370,6 +1371,13 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
     return nil;
 }
 
+- (NSCell *)_cellForColumn:(NSUInteger)columnIndex {
+	if ([[self dataSource] respondsToSelector:@selector(tableGrid:cellForColumn:)]) {
+		return [[self dataSource] tableGrid:self cellForColumn:columnIndex];
+	}
+	return nil;
+}
+
 - (NSArray *)_availableObjectValuesForColumn:(NSUInteger)columnIndex {
 	if ([[self dataSource] respondsToSelector:@selector(tableGrid:availableObjectValuesForColumn:)]) {
 		return [[self dataSource] tableGrid:self availableObjectValuesForColumn:columnIndex];
@@ -1442,6 +1450,12 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 	return YES;
 }
 
+- (void)_userDidEnterInvalidStringInColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex errorDescription:(NSString *)errorDescription {
+	if ([[self delegate] respondsToSelector:@selector(tableGrid:userDidEnterInvalidStringInColumn:row:errorDescription:)]) {
+		[[self delegate] tableGrid:self userDidEnterInvalidStringInColumn:columnIndex row:rowIndex errorDescription:errorDescription];
+	}
+}
+
 @end
 
 @implementation MBTableGrid (PrivateAccessors)
@@ -1461,12 +1475,6 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 
 - (MBTableGridEdge)_stickyRow {
 	return stickyRowEdge;
-}
-
-- (void)_userDidEnterInvalidStringInColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex errorDescription:(NSString *)errorDescription {
-    if ([[self delegate] respondsToSelector:@selector(tableGrid:userDidEnterInvalidStringInColumn:row:errorDescription:)]) {
-        [[self delegate] tableGrid:self userDidEnterInvalidStringInColumn:columnIndex row:rowIndex errorDescription:errorDescription];
-    }
 }
 
 @end

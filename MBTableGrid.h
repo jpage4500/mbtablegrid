@@ -645,6 +645,18 @@ typedef enum {
 @optional
 
 /**
+ *  @brief      Returns the cell associated with the specified column.
+ *
+ *  @param      aTableGrid  The table grid that sent the message.
+ *  @param      columnIndex A column in \c aTableGrid.
+ *
+ *  @return     The cell for the specified column
+ */
+- (NSCell *)tableGrid:(MBTableGrid *)aTableGrid cellForColumn:(NSUInteger)columnIndex;
+
+@optional
+
+/**
  *  @brief
  *
  *  @param aTableGrid  The table grid that sent the message.
