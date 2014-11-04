@@ -10,6 +10,8 @@
 
 @implementation MBButtonCell
 
+#pragma mark - Lifecycle
+
 - (instancetype)init {
 	self = [super init];
 	if (self) {
@@ -20,6 +22,14 @@
 	}
 	return self;
 }
+
+#pragma mark - MBTableGridEditable
+
+- (BOOL)editOnFirstClick {
+    return YES;
+}
+
+#pragma mark - NSCell
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView withBackgroundColor:(NSColor *)backgroundColor
 {
@@ -32,12 +42,7 @@
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
-	NSRect popupFrame = cellFrame;
-	popupFrame.size.width = 16;
-	popupFrame.size.height = 16;
-	popupFrame.origin.x = cellFrame.origin.x + (cellFrame.size.width / 2 - 8);
-	popupFrame.origin.y = cellFrame.origin.y + (cellFrame.size.height / 2 - 8);
-	
+	NSRect popupFrame = [self centeredButtonRectInCellFrame:cellFrame];
 	[super drawWithFrame:popupFrame inView:controlView];
 	
 	NSColor *borderColor = [NSColor colorWithDeviceWhite:0.83 alpha:1.0];
@@ -58,6 +63,23 @@
 {
 	// Do not draw any highlight.
 	return nil;
+}
+
+- (NSCellHitResult)hitTestForEvent:(NSEvent *)event inRect:(NSRect)cellFrame ofView:(NSView *)controlView {
+    NSRect centeredButtonRect = [self centeredButtonRectInCellFrame:cellFrame];
+    CGPoint eventLocationInControlView = [controlView convertPoint:event.locationInWindow fromView:nil];
+    return CGRectContainsPoint(centeredButtonRect, eventLocationInControlView) ? NSCellHitContentArea : NSCellHitNone;
+}
+
+#pragma mark - Private
+
+- (NSRect)centeredButtonRectInCellFrame:(NSRect)cellFrame {
+    NSRect centeredFrame = cellFrame;
+    centeredFrame.size.width = 16;
+    centeredFrame.size.height = 16;
+    centeredFrame.origin.x = cellFrame.origin.x + (cellFrame.size.width - centeredFrame.size.width) / 2;
+    centeredFrame.origin.y = cellFrame.origin.y + (cellFrame.size.height - centeredFrame.size.height) / 2;
+    return centeredFrame;
 }
 
 @end

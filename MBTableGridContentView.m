@@ -279,30 +279,28 @@
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-    
-    // Setup the timer for autoscrolling
+	// Setup the timer for autoscrolling
 	// (the simply calling autoscroll: from mouseDragged: only works as long as the mouse is moving)
 	autoscrollTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(_timerAutoscrollCallback:) userInfo:nil repeats:YES];
 	
-	NSPoint loc = [self convertPoint:[theEvent locationInWindow] fromView:nil];
-	mouseDownColumn = [self columnAtPoint:loc];
-	mouseDownRow = [self rowAtPoint:loc];
-	
-	if([theEvent clickCount] == 1) {
+	NSPoint mouseLocationInContentView = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+	mouseDownColumn = [self columnAtPoint:mouseLocationInContentView];
+	mouseDownRow = [self rowAtPoint:mouseLocationInContentView];
+	NSCell *cell = [[self tableGrid] _cellForColumn:mouseDownColumn];
+	BOOL cellEditsOnFirstClick = ([cell respondsToSelector:@selector(editOnFirstClick)] && [(id<MBTableGridEditable>)cell editOnFirstClick]);
+
+	if (theEvent.clickCount == 1) {
 		// Pass the event back to the MBTableGrid (Used to give First Responder status)
 		[[self tableGrid] mouseDown:theEvent];
 		
-		// Popup or Button cells
-		
 		NSUInteger selectedColumn = [[self tableGrid].selectedColumnIndexes firstIndex];
 		NSUInteger selectedRow = [[self tableGrid].selectedRowIndexes firstIndex];
-		
-		if (selectedColumn == mouseDownColumn && selectedRow == mouseDownRow) {
-			
+
+		// Edit an already selected cell if it doesn't edit on first click
+		if (selectedColumn == mouseDownColumn && selectedRow == mouseDownRow && !cellEditsOnFirstClick) {
 			[self editSelectedCell:self];
-			[self setNeedsDisplay:YES];
-			
-		} else if(([theEvent modifierFlags] & NSShiftKeyMask) && [self tableGrid].allowsMultipleSelection) {
+		// Expand a selection when the user holds the shift key
+		} else if (([theEvent modifierFlags] & NSShiftKeyMask) && [self tableGrid].allowsMultipleSelection) {
 			// If the shift key was held down, extend the selection
 			NSUInteger stickyColumn = [[self tableGrid].selectedColumnIndexes firstIndex];
 			NSUInteger stickyRow = [[self tableGrid].selectedRowIndexes firstIndex];
@@ -341,20 +339,30 @@
 			
 			// Set the sticky edges
 			[[self tableGrid] _setStickyColumn:stickyColumnEdge row:stickyRowEdge];
+		// First click on a cell without shift key modifier
 		} else {
 			// No modifier keys, so change the selection
 			[self tableGrid].selectedColumnIndexes = [NSIndexSet indexSetWithIndex:mouseDownColumn];
 			[self tableGrid].selectedRowIndexes = [NSIndexSet indexSetWithIndex:mouseDownRow];
 			[[self tableGrid] _setStickyColumn:MBTableGridLeftEdge row:MBTableGridTopEdge];
 		}
-        
-        [self setNeedsDisplay:YES];
-        
-	} else if([theEvent clickCount] == 2) {
+    // Edit cells on double click if they don't already edit on first click
+	} else if (theEvent.clickCount == 2 && !cellEditsOnFirstClick) {
 		// Double click
 		[self editSelectedCell:self];
-        [self setNeedsDisplay:YES];
 	}
+
+	// Any cells that should edit on first click are handled here
+	if (cellEditsOnFirstClick) {
+		NSRect cellFrame = [[self tableGrid] frameOfCellAtColumn:mouseDownColumn row:mouseDownRow];
+		cellFrame = NSOffsetRect(cellFrame, -self.enclosingScrollView.frame.origin.x, -self.enclosingScrollView.frame.origin.y);
+		BOOL mouseEventHitButton = [cell hitTestForEvent:theEvent inRect:cellFrame ofView:self] == NSCellHitContentArea;
+		if (mouseEventHitButton) {
+			[self editSelectedCell:self];
+		}
+	}
+
+	[self setNeedsDisplay:YES];
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
@@ -521,17 +529,17 @@
 
 - (void)editSelectedCell:(id)sender
 {
-	// Get the top-left selection
-	editedColumn = [[self tableGrid].selectedColumnIndexes firstIndex];
-	editedRow = [[self tableGrid].selectedRowIndexes firstIndex];
-	
+	NSInteger selectedColumn = [[self tableGrid].selectedColumnIndexes firstIndex];
+	NSInteger selectedRow = [[self tableGrid].selectedRowIndexes firstIndex];
+	NSCell *selectedCell = [[self tableGrid] _cellForColumn:selectedColumn];
+
 	// Check if the cell can be edited
-	if(![[self tableGrid] _canEditCellAtColumn:editedColumn row:editedRow]) {
+	if(![[self tableGrid] _canEditCellAtColumn:selectedColumn row:selectedColumn]) {
 		editedColumn = NSNotFound;
 		editedRow = NSNotFound;
 		return;
 	}
-	
+
 	// Select it and only it
 	if([[self tableGrid].selectedColumnIndexes count] > 1) {
 		[self tableGrid].selectedColumnIndexes = [NSIndexSet indexSetWithIndex:editedColumn];
@@ -539,36 +547,41 @@
 	if([[self tableGrid].selectedRowIndexes count] > 1) {
 		[self tableGrid].selectedRowIndexes = [NSIndexSet indexSetWithIndex:editedRow];
 	}
-	
+
+	// Editing a button cell involves simply toggling its state, we don't need to change the edited column and row or enter an editing state
+	if ([selectedCell isKindOfClass:[MBButtonCell class]]) {
+		id currentValue = [[self tableGrid] _objectValueForColumn:selectedColumn row:selectedRow];
+		selectedCell.objectValue = @(![currentValue boolValue]);
+		[[self tableGrid] _setObjectValue:selectedCell.objectValue forColumn:selectedColumn row:selectedRow];
+
+		return;
+	}
+
+	// Get the top-left selection
+	editedColumn = selectedColumn;
+	editedRow = selectedRow;
+
 	NSRect cellFrame = [self frameOfCellAtColumn:editedColumn row:editedRow];
 
-	NSCell *cell = [[self tableGrid] _cellForColumn:editedColumn];
-	[cell setEditable:YES];
-	[cell setSelectable:YES];
+	[selectedCell setEditable:YES];
+	[selectedCell setSelectable:YES];
 	
 	id currentValue = [[self tableGrid] _objectValueForColumn:editedColumn row:editedRow];
 
-	if ([cell isKindOfClass:[MBPopupButtonCell class]]) {
-		MBPopupButtonCell *popupCell = (MBPopupButtonCell *)cell;
+	if ([selectedCell isKindOfClass:[MBPopupButtonCell class]]) {
+		MBPopupButtonCell *popupCell = (MBPopupButtonCell *)selectedCell;
 		[popupCell selectItemWithTitle:currentValue];
 		
-		NSMenu *menu = cell.menu;
+		NSMenu *menu = selectedCell.menu;
 		for (NSMenuItem *item in menu.itemArray) {
 			item.action = @selector(cellPopupMenuItemSelected:);
 			item.target = self;
 		}
-		[cell.menu popUpMenuPositioningItem:nil atLocation:cellFrame.origin inView:self];
+		[selectedCell.menu popUpMenuPositioningItem:nil atLocation:cellFrame.origin inView:self];
 
-	} else if ([cell isKindOfClass:[MBButtonCell class]]) {
-		
-		cell.objectValue = @(![cell.objectValue boolValue]);
-		[[self tableGrid] _setObjectValue:cell.objectValue forColumn:editedColumn row:editedRow];
-		
-
-	// Otherwise edit the object value as a string
 	} else {
 		NSText *editor = [[self window] fieldEditor:YES forObject:self];
-		[cell editWithFrame:cellFrame inView:self editor:editor delegate:self event:nil];
+		[selectedCell editWithFrame:cellFrame inView:self editor:editor delegate:self event:nil];
 	}
 }
 
