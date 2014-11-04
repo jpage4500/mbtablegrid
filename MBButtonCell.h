@@ -6,8 +6,12 @@
 //
 //
 
-#import <Cocoa/Cocoa.h>
+#import "MBTableGridEditable.h"
 
-@interface MBButtonCell : NSButtonCell
+@interface MBButtonCell : NSButtonCell <MBTableGridEditable>
+
+#pragma mark - MBTableGridEditable
+
+@property (nonatomic, assign, readonly) BOOL editOnFirstClick;
 
 @end
