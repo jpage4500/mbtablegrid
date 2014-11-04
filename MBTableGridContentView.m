@@ -582,13 +582,14 @@
 
 	if ([selectedCell isKindOfClass:[MBPopupButtonCell class]]) {
 		MBPopupButtonCell *popupCell = (MBPopupButtonCell *)selectedCell;
-		[popupCell selectItemWithTitle:currentValue];
-		
+
 		NSMenu *menu = selectedCell.menu;
 		for (NSMenuItem *item in menu.itemArray) {
 			item.action = @selector(cellPopupMenuItemSelected:);
 			item.target = self;
 		}
+
+		[popupCell selectItemAtIndex:[currentValue integerValue]];
 		[selectedCell.menu popUpMenuPositioningItem:nil atLocation:cellFrame.origin inView:self];
 
 	} else {
@@ -602,8 +603,9 @@
 {
 	MBPopupButtonCell *cell = (MBPopupButtonCell *)[[self tableGrid] _cellForColumn:editedColumn];
 	[cell selectItem:menuItem];
-	
-	id objectValue = menuItem.title;
+
+	NSArray *options = [[self tableGrid] _availableObjectValuesForColumn:editedColumn];
+	id objectValue = @([options indexOfObject:menuItem.title]);
 	[[self tableGrid] _setObjectValue:objectValue forColumn:editedColumn row:editedRow];
 	
 	editedColumn = NSNotFound;
