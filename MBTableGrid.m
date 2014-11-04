@@ -737,6 +737,8 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 	// Insert the typed string into the field editor
 	NSText *fieldEditor = [[self window] fieldEditor:YES forObject:self];
 	[fieldEditor setString:aString];
+
+    [self setNeedsDisplay:YES];
 }
 
 #pragma mark -
