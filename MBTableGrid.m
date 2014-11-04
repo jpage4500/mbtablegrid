@@ -255,17 +255,19 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 	if (!columnKey) {
 		columnKey = [NSString stringWithFormat:@"column%lu", columnIndex];
 	}
-	
-	// flush rect cache for this column because we're changing its size
-	[self.columnRects removeAllObjects];
-	
+
+	// Note that we only need this rect for its origin, which won't be changing, otherwise we'd need to flush the column rect cache first
 	NSRect columnRect = [self rectOfColumn:columnIndex];
-	
+
+	// Flush rect cache for this column because we're changing its size
+	// Note that we're doing this after calling rectOfColumn: because that would cache the rect before we change its width...
+	[self.columnRects removeAllObjects];
+
 	// Set new width of column
-	float currentWidth = [columnWidths[columnKey] floatValue];
+	CGFloat currentWidth = [columnWidths[columnKey] floatValue];
 	
 	if (location.x > columnRect.origin.x) {
-		
+
 		currentWidth += distance;
 		
 		CGFloat minColumnWidth = MBTableHeaderMinimumColumnWidth;
@@ -282,15 +284,17 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 		currentWidth = MBTableHeaderMinimumColumnWidth;
 	}
 	
-	
 	columnWidths[columnKey] = @(currentWidth);
 	
 	// Update views with new sizes
 	[contentView setFrameSize:NSMakeSize(NSWidth(contentView.frame) + distance, NSHeight(contentView.frame))];
 	[columnHeaderView setFrameSize:NSMakeSize(NSWidth(columnHeaderView.frame) + distance, NSHeight(columnHeaderView.frame))];
-	[contentView setNeedsDisplay:YES];
-	[columnHeaderView setNeedsDisplayInRect:columnHeaderView.frame];
 	
+	NSRect rectOfResizedAndVisibleRightwardColumns = NSMakeRect(columnRect.origin.x - rowHeaderView.bounds.size.width, 0, contentView.bounds.size.width - columnRect.origin.x, NSHeight(contentView.frame));
+	[contentView setNeedsDisplayInRect:rectOfResizedAndVisibleRightwardColumns];
+	
+	NSRect rectOfResizedAndVisibleRightwardHeaders = NSMakeRect(columnRect.origin.x - rowHeaderView.bounds.size.width, 0, contentView.bounds.size.width - columnRect.origin.x, NSHeight(columnHeaderView.frame));
+	[columnHeaderView setNeedsDisplayInRect:rectOfResizedAndVisibleRightwardHeaders];
 }
 
 - (void)registerForDraggedTypes:(NSArray *)pboardTypes {

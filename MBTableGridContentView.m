@@ -686,8 +686,7 @@
 - (NSImage *)_cellSelectionCursorImage
 {
 	NSImage *image = [[NSImage alloc] initWithSize:NSMakeSize(20, 20)];
-	[image setFlipped:YES];
-	[image lockFocus];
+	[image lockFocusFlipped:YES];
 	
 	NSRect horizontalInner = NSMakeRect(7.0, 2.0, 2.0, 12.0);
 	NSRect verticalInner = NSMakeRect(2.0, 7.0, 12.0, 2.0);
@@ -738,8 +737,7 @@
 - (NSImage *)_cellExtendSelectionCursorImage
 {
 	NSImage *image = [[NSImage alloc] initWithSize:NSMakeSize(20, 20)];
-	[image setFlipped:YES];
-	[image lockFocus];
+	[image lockFocusFlipped:YES];
 	
 	NSRect horizontalInner = NSMakeRect(7.0, 1.0, 1.0, 12.0);
 	NSRect verticalInner = NSMakeRect(1.0, 6.0, 12.0, 1.0);

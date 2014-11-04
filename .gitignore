@@ -3,5 +3,4 @@ build/*
 *.pbxuser
 .DS_Store
 MBTableGrid.xcodeproj/project.xcworkspace/xcshareddata
-MBTableGrid.xcodeproj/project.xcworkspace/xcuserdata/brendan.xcuserdatad
-MBTableGrid.xcodeproj/xcuserdata/brendan.xcuserdatad
+xcuserdata
