@@ -465,6 +465,18 @@
 	
 	// End the editing session
 	[[[self tableGrid] cell] endEditing:[[self window] fieldEditor:NO forObject:self]];
+
+	NSInteger movementType = [aNotification.userInfo[@"NSTextMovement"] integerValue];
+	switch (movementType) {
+		case NSTabTextMovement:
+			[[self tableGrid] moveRight:self];
+			break;
+		case NSReturnTextMovement:
+			[[self tableGrid] moveDown:self];
+			break;
+		default:
+			break;
+	}
 }
 
 #pragma mark -
@@ -581,6 +593,7 @@
 
 	} else {
 		NSText *editor = [[self window] fieldEditor:YES forObject:self];
+		editor.delegate = self;
 		[selectedCell editWithFrame:cellFrame inView:self editor:editor delegate:self event:nil];
 	}
 }

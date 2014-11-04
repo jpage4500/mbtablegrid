@@ -84,7 +84,6 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 - (void)_setDropRow:(NSInteger)rowIndex;
 @end
 
-
 @implementation MBTableGrid
 
 @synthesize allowsMultipleSelection;
@@ -735,7 +734,8 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 	[contentView editSelectedCell:self];
 
 	// Insert the typed string into the field editor
-	NSText *fieldEditor = [[self window] fieldEditor:YES forObject:self];
+	NSText *fieldEditor = [[self window] fieldEditor:YES forObject:contentView];
+	fieldEditor.delegate = contentView;
 	[fieldEditor setString:aString];
 
     [self setNeedsDisplay:YES];
