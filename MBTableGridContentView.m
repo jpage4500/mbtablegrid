@@ -596,6 +596,7 @@
 		NSText *editor = [[self window] fieldEditor:YES forObject:self];
 		editor.delegate = self;
 		[selectedCell editWithFrame:cellFrame inView:self editor:editor delegate:self event:nil];
+		editor.string = currentValue;
 	}
 }
 
