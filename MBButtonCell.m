@@ -33,6 +33,7 @@
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView withBackgroundColor:(NSColor *)backgroundColor
 {
+    self.backgroundColor = backgroundColor;
 	
 	[backgroundColor set];
 	NSRectFill(cellFrame);
