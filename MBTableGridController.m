@@ -162,7 +162,7 @@
 
 - (NSFormatter *)tableGrid:(MBTableGrid *)aTableGrid formatterForColumn:(NSUInteger)columnIndex
 {
-    if (columnIndex >= 2) {
+    if (columnIndex == 2 || columnIndex == 3) {
         return nil;
     }
 
