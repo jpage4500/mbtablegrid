@@ -162,11 +162,11 @@
 
 - (NSFormatter *)tableGrid:(MBTableGrid *)aTableGrid formatterForColumn:(NSUInteger)columnIndex
 {
-    if (columnIndex == 2 || columnIndex == 3) {
-        return nil;
-    }
+	if (columnIndex == 0 || columnIndex == 1) {
+		return formatters[columnIndex % [formatters count]];
+	}
 
-    return formatters[columnIndex % [formatters count]];
+	return nil;
 }
 
 - (NSCell *)tableGrid:(MBTableGrid *)aTableGrid cellForColumn:(NSUInteger)columnIndex {
