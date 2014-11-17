@@ -1,14 +1,14 @@
 //
-//  MBPopupButtonCell.h
+//  MBImageCell.h
 //  MBTableGrid
 //
-//  Created by Brendan Duddridge on 2014-10-27.
+//  Created by Brendan Duddridge on 2014-11-13.
 //
 //
 
 #import <Cocoa/Cocoa.h>
 
-@interface MBPopupButtonCell : NSPopUpButtonCell
+@interface MBImageCell : NSImageCell
 
 @property (nonatomic, strong) NSImage *accessoryButtonImage;
 

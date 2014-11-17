@@ -10,6 +10,8 @@
 
 @interface MBButtonCell : NSButtonCell <MBTableGridEditable>
 
+@property (nonatomic, strong) NSImage *accessoryButtonImage;
+
 #pragma mark - MBTableGridEditable
 
 @property (nonatomic, assign, readonly) BOOL editOnFirstClick;

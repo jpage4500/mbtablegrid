@@ -29,6 +29,7 @@
 #import "MBTableGridCell.h"
 #import "MBPopupButtonCell.h"
 #import "MBButtonCell.h"
+#import "MBImageCell.h"
 
 #define kGRAB_HANDLE_HALF_SIDE_LENGTH 2.0f
 #define kGRAB_HANDLE_SIDE_LENGTH 4.0f
@@ -37,6 +38,8 @@
 - (id)_objectValueForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (NSFormatter *)_formatterForColumn:(NSUInteger)columnIndex;
 - (NSCell *)_cellForColumn:(NSUInteger)columnIndex;
+- (NSImage *)_accessoryButtonImageForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
+- (void)_accessoryButtonClicked:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (NSArray *)_availableObjectValuesForColumn:(NSUInteger)columnIndex;
 - (void)_setObjectValue:(id)value forColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (BOOL)_canEditCellAtColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
@@ -155,11 +158,24 @@
 				[_cell setObjectValue:[[self tableGrid] _objectValueForColumn:column row:row]];
 				
 				if ([_cell isKindOfClass:[MBPopupButtonCell class]]) {
+					
 					MBPopupButtonCell *cell = (MBPopupButtonCell *)_cell;
 					[cell drawWithFrame:cellFrame inView:self withBackgroundColor:backgroundColor];// Draw background color
-				} else {
-					MBTableGridCell *cell = (MBTableGridCell *)_cell;
+					
+				} else if ([_cell isKindOfClass:[MBImageCell class]]) {
+					
+					MBImageCell *cell = (MBImageCell *)_cell;
+					cell.accessoryButtonImage = [[self tableGrid] _accessoryButtonImageForColumn:column row:row];
+					
 					[cell drawWithFrame:cellFrame inView:self withBackgroundColor:backgroundColor];// Draw background color
+					
+				} else {
+					
+					MBTableGridCell *cell = (MBTableGridCell *)_cell;
+					cell.accessoryButtonImage = [[self tableGrid] _accessoryButtonImageForColumn:column row:row];
+					
+					[cell drawWithFrame:cellFrame inView:self withBackgroundColor:backgroundColor];// Draw background color
+					
 				}
 			}
 			row++;
@@ -298,7 +314,17 @@
 
 		// Edit an already selected cell if it doesn't edit on first click
 		if (selectedColumn == mouseDownColumn && selectedRow == mouseDownRow && !cellEditsOnFirstClick) {
-			[self editSelectedCell:self];
+			
+			if ([[self tableGrid] _accessoryButtonImageForColumn:mouseDownColumn row:mouseDownRow]) {
+				NSRect cellFrame = [self frameOfCellAtColumn:mouseDownColumn row:mouseDownRow];
+				NSCellHitResult hitResult = [cell hitTestForEvent:theEvent inRect:cellFrame ofView:self];
+				if (hitResult != NSCellHitNone) {
+					[[self tableGrid] _accessoryButtonClicked:mouseDownColumn row:mouseDownRow];
+				}
+			} else {
+				[self editSelectedCell:self];
+			}
+			
 		// Expand a selection when the user holds the shift key
 		} else if (([theEvent modifierFlags] & NSShiftKeyMask) && [self tableGrid].allowsMultipleSelection) {
 			// If the shift key was held down, extend the selection
@@ -567,6 +593,11 @@
 		[[self tableGrid] _setObjectValue:selectedCell.objectValue forColumn:selectedColumn row:selectedRow];
 
 		return;
+	} else if ([selectedCell isKindOfClass:[MBImageCell class]]) {
+		editedColumn = NSNotFound;
+		editedRow = NSNotFound;
+		
+		return;
 	}
 
 	// Get the top-left selection
@@ -591,6 +622,7 @@
 
 		[popupCell selectItemAtIndex:[currentValue integerValue]];
 		[selectedCell.menu popUpMenuPositioningItem:nil atLocation:cellFrame.origin inView:self];
+	
 
 	} else {
 		NSText *editor = [[self window] fieldEditor:YES forObject:self];

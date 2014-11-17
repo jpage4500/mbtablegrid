@@ -27,6 +27,7 @@
 #import "MBTableGridCell.h"
 #import "MBPopupButtonCell.h"
 #import "MBButtonCell.h"
+#import "MBImageCell.h"
 
 @interface NSMutableArray (SwappingAdditions)
 - (void)moveObjectsAtIndexes:(NSIndexSet *)indexes toIndex:(NSUInteger)index;
@@ -36,6 +37,7 @@
 @property (nonatomic, strong) MBPopupButtonCell *popupCell;
 @property (nonatomic, strong) MBTableGridCell *textCell;
 @property (nonatomic, strong) MBButtonCell *checkboxCell;
+@property (nonatomic, strong) MBImageCell *imageCell;
 @end
 
 @implementation MBTableGridController
@@ -96,6 +98,8 @@
 	self.checkboxCell.state = NSOffState;
 	[self.checkboxCell setButtonType:NSSwitchButton];
 	
+	self.imageCell = [[MBImageCell alloc] init];
+	
 }
 
 
@@ -155,9 +159,28 @@
 		return nil;
 	}
 	
-	id value = column[rowIndex];
+	id value = nil;
+	
+	if (columnIndex == 6) {
+		value = [NSImage imageNamed:@"rose.jpg"];
+	} else {
+		value = column[rowIndex];
+	}
 	
 	return value;
+}
+
+- (BOOL)tableGrid:(MBTableGrid *)aTableGrid shouldEditColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex {
+	
+	// can't edit the sample image column
+	
+//	if (columnIndex == 6) {
+//		return NO;
+//	} else {
+//		return YES;
+//	}
+	
+	return YES;
 }
 
 - (NSFormatter *)tableGrid:(MBTableGrid *)aTableGrid formatterForColumn:(NSUInteger)columnIndex
@@ -176,11 +199,25 @@
 		cell = self.popupCell;
 	} else if (columnIndex == 3) {
 		cell = self.checkboxCell;
+	} else if (columnIndex == 6) {
+		cell = self.imageCell;
 	} else {
 		cell = self.textCell;
 	}
 	
 	return cell;
+}
+
+- (NSImage *)tableGrid:(MBTableGrid *)aTableGrid accessoryButtonImageForColumn:(NSUInteger)columnIndex row:(NSUInteger)row {
+	
+	if ([tableGrid.selectedRowIndexes containsIndex:row] && [tableGrid.selectedColumnIndexes containsIndex:columnIndex]) {
+		NSImage *buttonImage = [NSImage imageNamed:@"acc-quicklook"];
+		
+		return buttonImage;
+	} else {
+		return nil;
+	}
+	
 }
 
 - (NSArray *)tableGrid:(MBTableGrid *)aTableGrid availableObjectValuesForColumn:(NSUInteger)columnIndex
@@ -209,6 +246,7 @@
 	
 	column[rowIndex] = anObject;
 }
+
 
 - (float)tableGrid:(MBTableGrid *)aTableGrid setWidthForColumn:(NSUInteger)columnIndex
 {
@@ -288,6 +326,86 @@
 - (void)tableGrid:(MBTableGrid *)aTableGrid userDidEnterInvalidStringInColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex errorDescription:(NSString *)errorDescription {
 	NSLog(@"Invalid input at %lu,%lu: %@", (unsigned long)columnIndex, (unsigned long)rowIndex, errorDescription);
 }
+
+- (void)tableGrid:(MBTableGrid *)aTableGrid accessoryButtonClicked:(NSUInteger)columnIndex row:(NSUInteger)rowIndex {
+	if (columnIndex == 6) {
+		[self quickLookAction:nil];
+	}
+}
+
+#pragma mark - QuickLook
+
+-(void)quickLookAction:(id)sender {
+	//	[[NSApp mainWindow] makeFirstResponder:self];
+	
+	if ([QLPreviewPanel sharedPreviewPanelExists] && [[QLPreviewPanel sharedPreviewPanel] isVisible]) {
+		[[QLPreviewPanel sharedPreviewPanel] orderOut:nil];
+	} else {
+		QLPreviewPanel *previewPanel = [QLPreviewPanel sharedPreviewPanel];
+		previewPanel.dataSource = self;
+		previewPanel.delegate = self;
+		[previewPanel makeKeyAndOrderFront:sender];
+	}
+}
+
+
+// Quick Look panel support
+
+- (BOOL)acceptsPreviewPanelControl:(QLPreviewPanel *)panel; {
+	return YES;
+}
+
+- (void)beginPreviewPanelControl:(QLPreviewPanel *)panel {
+	// This document is now responsible of the preview panel
+	// It is allowed to set the delegate, data source and refresh panel.
+	
+	panel.delegate = self;
+	panel.dataSource = self;
+}
+
+- (void)endPreviewPanelControl:(QLPreviewPanel *)panel {
+	panel.delegate = nil;
+	panel.dataSource = nil;
+}
+
+// Quick Look panel data source
+
+- (NSInteger)numberOfPreviewItemsInPreviewPanel:(QLPreviewPanel *)panel {
+	return 1;
+}
+
+- (id <QLPreviewItem>)previewPanel:(QLPreviewPanel *)panel previewItemAtIndex:(NSInteger)index {
+	NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+	NSURL *fileURL = nil;
+	__block NSURL *returnURL = nil;
+	NSError *error = nil;
+	fileURL = [[NSBundle mainBundle] URLForImageResource:@"rose"];
+	
+	[coordinator coordinateReadingItemAtURL:fileURL
+									options:NSFileCoordinatorReadingWithoutChanges
+									  error:&error
+								 byAccessor:^(NSURL *newURL) {
+									 returnURL = newURL;
+								 }];
+	
+	return returnURL;
+}
+
+// This delegate method provides the rect on screen from which the panel will zoom.
+- (NSRect)previewPanel:(QLPreviewPanel *)panel sourceFrameOnScreenForPreviewItem:(id <QLPreviewItem>)item {
+	
+	// convert selected cell rect to screen coordinates
+	NSInteger selectedColumn = [tableGrid.selectedColumnIndexes firstIndex];
+	NSInteger selectedRow = [tableGrid.selectedRowIndexes firstIndex];
+	NSCell *selectedCell = [tableGrid selectedCell];
+	
+	NSRect photoPreviewFrame = [tableGrid frameOfCellAtColumn:selectedColumn row:selectedRow];
+	NSRect rectInWinCoords = [selectedCell.controlView convertRect:photoPreviewFrame toView:nil];
+	NSRect rectInScreenCoords = [[NSApp mainWindow] convertRectToScreen:rectInWinCoords];
+	
+	return rectInScreenCoords;
+}
+
 
 #pragma mark -
 #pragma mark Subclass Methods

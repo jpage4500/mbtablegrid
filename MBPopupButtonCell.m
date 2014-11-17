@@ -23,8 +23,7 @@
 	return nil;
 }
 
-- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView withBackgroundColor:(NSColor *)backgroundColor
-{
+- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView withBackgroundColor:(NSColor *)backgroundColor {
 	
 	[backgroundColor set];
 	NSRectFill(cellFrame);
@@ -32,8 +31,7 @@
 	[self drawWithFrame:cellFrame inView:controlView];
 }
 
-- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
-{
+- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
 	NSRect popupFrame = cellFrame;
 	popupFrame.size.width -= 4;
 	

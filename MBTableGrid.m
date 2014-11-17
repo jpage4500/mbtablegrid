@@ -28,6 +28,9 @@
 #import "MBTableGridHeaderCell.h"
 #import "MBTableGridContentView.h"
 #import "MBTableGridCell.h"
+#import "MBImageCell.h"
+#import "MBButtonCell.h"
+#import "MBPopupButtonCell.h"
 
 #pragma mark -
 #pragma mark Constant Definitions
@@ -53,6 +56,8 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 - (id)_objectValueForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (NSFormatter *)_formatterForColumn:(NSUInteger)columnIndex;
 - (NSCell *)_cellForColumn:(NSUInteger)columnIndex;
+- (NSImage *)_accessoryButtonImageForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
+- (void)_accessoryButtonClicked:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (NSArray *)_availableObjectValuesForColumn:(NSUInteger)columnIndex;
 - (void)_setObjectValue:(id)value forColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 - (float)_widthForColumn:(NSUInteger)columnIndex;
@@ -731,14 +736,25 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 }
 
 - (void)insertText:(id)aString {
-	[contentView editSelectedCell:self];
+	NSUInteger column = [self.selectedColumnIndexes firstIndex];
+	NSCell *selectedCell = [self _cellForColumn:column];
+	
+	if (![selectedCell isKindOfClass:[MBImageCell class]]) {
+		[contentView editSelectedCell:self];
+		
+		if ([selectedCell isKindOfClass:[MBTableGridCell class]]) {
+			// Insert the typed string into the field editor
+			NSText *fieldEditor = [[self window] fieldEditor:YES forObject:contentView];
+			fieldEditor.delegate = contentView;
+			[fieldEditor setString:aString];
+		}
+		
+	} else {
+		NSUInteger row = [self.selectedRowIndexes firstIndex];
+		[self _accessoryButtonClicked:column row:row];
+	}
+	[self setNeedsDisplay:YES];
 
-	// Insert the typed string into the field editor
-	NSText *fieldEditor = [[self window] fieldEditor:YES forObject:contentView];
-	fieldEditor.delegate = contentView;
-	[fieldEditor setString:aString];
-
-    [self setNeedsDisplay:YES];
 }
 
 #pragma mark -
@@ -1370,6 +1386,13 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 	return nil;
 }
 
+- (NSImage *)_accessoryButtonImageForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex {
+	if ([[self dataSource] respondsToSelector:@selector(tableGrid:accessoryButtonImageForColumn:row:)]) {
+		return [[self dataSource] tableGrid:self accessoryButtonImageForColumn:columnIndex row:rowIndex];
+	}
+	return nil;
+}
+
 - (NSFormatter *)_formatterForColumn:(NSUInteger)columnIndex {
     if ([[self dataSource] respondsToSelector:@selector(tableGrid:formatterForColumn:)]) {
         return [[self dataSource] tableGrid:self formatterForColumn:columnIndex];
@@ -1459,6 +1482,12 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 - (void)_userDidEnterInvalidStringInColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex errorDescription:(NSString *)errorDescription {
 	if ([[self delegate] respondsToSelector:@selector(tableGrid:userDidEnterInvalidStringInColumn:row:errorDescription:)]) {
 		[[self delegate] tableGrid:self userDidEnterInvalidStringInColumn:columnIndex row:rowIndex errorDescription:errorDescription];
+	}
+}
+
+- (void)_accessoryButtonClicked:(NSUInteger)columnIndex row:(NSUInteger)rowIndex {
+	if ([[self delegate] respondsToSelector:@selector(tableGrid:accessoryButtonClicked:row:)]) {
+		[[self delegate] tableGrid:self accessoryButtonClicked:columnIndex row:rowIndex];
 	}
 }
 

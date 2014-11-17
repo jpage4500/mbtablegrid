@@ -105,7 +105,7 @@ typedef enum {
  *
  * @author		Matthew Ball
  */
-@interface MBTableGrid : NSControl {
+@interface MBTableGrid : NSControl<NSDraggingSource> {
 	/* Headers */
 	MBTableGridHeaderCell *headerCell;
 	
@@ -657,6 +657,19 @@ typedef enum {
 @optional
 
 /**
+ *  @brief      Returns the cell's accessory button with the specified column and row
+ *
+ *  @param      aTableGrid  The table grid that sent the message.
+ *  @param      columnIndex A column in \c aTableGrid.
+ *  @
+ *
+ *  @return     The cell for the specified column
+ */
+- (NSImage *)tableGrid:(MBTableGrid *)aTableGrid accessoryButtonImageForColumn:(NSUInteger)columnIndex row:(NSUInteger)row;
+
+@optional
+
+/**
  *  @brief
  *
  *  @param aTableGrid  The table grid that sent the message.
@@ -1094,6 +1107,15 @@ typedef enum {
  *  @param      errorDescription The error description of why the string was invalid
  */
 - (void)tableGrid:(MBTableGrid *)aTableGrid userDidEnterInvalidStringInColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex errorDescription:(NSString *)errorDescription;
+
+/**
+ *  @brief      Informs the delegate that an accessory button was clicked
+ *
+ *  @param      aTableGrid       The table grid that contains the cell
+ *  @param      columnIndex      The column of the cell
+ *  @param      rowIndex         The row of the cell
+ */
+- (void)tableGrid:(MBTableGrid *)aTableGrid accessoryButtonClicked:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
 
 /**
  * @}
