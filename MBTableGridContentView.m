@@ -30,6 +30,7 @@
 #import "MBPopupButtonCell.h"
 #import "MBButtonCell.h"
 #import "MBImageCell.h"
+#import "MBLevelIndicatorCell.h"
 
 #define kGRAB_HANDLE_HALF_SIDE_LENGTH 2.0f
 #define kGRAB_HANDLE_SIDE_LENGTH 4.0f
@@ -169,6 +170,15 @@
 					
 					[cell drawWithFrame:cellFrame inView:self withBackgroundColor:backgroundColor];// Draw background color
 					
+				} else if ([_cell isKindOfClass:[MBLevelIndicatorCell class]]) {
+					
+					MBLevelIndicatorCell *cell = (MBLevelIndicatorCell *)_cell;
+
+					cell.target = self;
+					cell.action = @selector(updateLevelIndicator:);
+					
+					[cell drawWithFrame:cellFrame inView:[self tableGrid] withBackgroundColor:backgroundColor];// Draw background color
+					
 				} else {
 					
 					MBTableGridCell *cell = (MBTableGridCell *)_cell;
@@ -288,6 +298,26 @@
 	}
 }
 
+- (void)updateCell:(id)sender {
+	// This is here just to satisfy NSLevelIndicatorCell because
+	// when this view is the controlView for the NSLevelIndicatorCell,
+	// it calls updateCell on this controlView.
+}
+
+- (void)updateLevelIndicator:(NSNumber *)value {
+	NSInteger selectedColumn = [[self tableGrid].selectedColumnIndexes firstIndex];
+	NSInteger selectedRow = [[self tableGrid].selectedRowIndexes firstIndex];
+	// sanity check to make sure we have an NSNumber.
+	// I've observed that when the user lets go of the mouse,
+	// the value parameter becomes the MBTableGridContentView
+	// object for some reason.
+	if ([value isKindOfClass:[NSNumber class]]) {
+		[[self tableGrid] _setObjectValue:value forColumn:selectedColumn row:selectedRow];
+		NSRect cellFrame = [[self tableGrid] frameOfCellAtColumn:selectedColumn row:selectedRow];
+		[[self tableGrid] setNeedsDisplayInRect:cellFrame];
+	}
+}
+
 - (BOOL)isFlipped
 {
 	return YES;
@@ -321,6 +351,11 @@
 				if (hitResult != NSCellHitNone) {
 					[[self tableGrid] _accessoryButtonClicked:mouseDownColumn row:mouseDownRow];
 				}
+			} else if ([cell isKindOfClass:[MBLevelIndicatorCell class]]) {
+				NSRect cellFrame = [self frameOfCellAtColumn:mouseDownColumn row:mouseDownRow];
+				
+				[cell trackMouse:theEvent inRect:cellFrame ofView:self untilMouseUp:YES];
+				
 			} else {
 				[self editSelectedCell:self];
 			}
@@ -373,7 +408,7 @@
 			[[self tableGrid] _setStickyColumn:MBTableGridLeftEdge row:MBTableGridTopEdge];
 		}
     // Edit cells on double click if they don't already edit on first click
-	} else if (theEvent.clickCount == 2 && !cellEditsOnFirstClick) {
+	} else if (theEvent.clickCount == 2 && !cellEditsOnFirstClick && ![cell isKindOfClass:[MBLevelIndicatorCell class]]) {
 		// Double click
 		[self editSelectedCell:self];
 	}
@@ -457,6 +492,20 @@
 {
     //NSLog(@"%s - %f %f %f %f", __func__, grabHandleRect.origin.x, grabHandleRect.origin.y, grabHandleRect.size.width, grabHandleRect.size.height);
 	// The main cursor should be the cell selection cursor
+	
+	NSIndexSet *selectedColumns = [self tableGrid].selectedColumnIndexes;
+	NSIndexSet *selectedRows = [self tableGrid].selectedRowIndexes;
+
+	NSRect selectionTopLeft = [self frameOfCellAtColumn:[selectedColumns firstIndex] row:[selectedRows firstIndex]];
+	NSRect selectionBottomRight = [self frameOfCellAtColumn:[selectedColumns lastIndex] row:[selectedRows lastIndex]];
+	
+	NSRect selectionRect;
+	selectionRect.origin = selectionTopLeft.origin;
+	selectionRect.size.width = NSMaxX(selectionBottomRight)-selectionTopLeft.origin.x;
+	selectionRect.size.height = NSMaxY(selectionBottomRight)-selectionTopLeft.origin.y;
+
+	[self addCursorRect:selectionRect cursor:[NSCursor arrowCursor]];
+
 	[self addCursorRect:[self visibleRect] cursor:[self _cellSelectionCursor]];
     [self addCursorRect:grabHandleRect cursor:[self _cellExtendSelectionCursor]];
 }
@@ -593,7 +642,26 @@
 		[[self tableGrid] _setObjectValue:selectedCell.objectValue forColumn:selectedColumn row:selectedRow];
 
 		return;
+		
 	} else if ([selectedCell isKindOfClass:[MBImageCell class]]) {
+		editedColumn = NSNotFound;
+		editedRow = NSNotFound;
+		
+		return;
+	} else if ([selectedCell isKindOfClass:[MBLevelIndicatorCell class]]) {
+		
+		MBLevelIndicatorCell *cell = (MBLevelIndicatorCell *)selectedCell;
+		
+		id currentValue = [[self tableGrid] _objectValueForColumn:selectedColumn row:selectedRow];
+		
+		if ([currentValue integerValue] >= cell.maxValue) {
+			cell.objectValue = @0;
+		} else {
+			cell.objectValue = @([currentValue integerValue] + 1);
+		}
+		
+		[[self tableGrid] _setObjectValue:cell.objectValue forColumn:selectedColumn row:selectedRow];
+
 		editedColumn = NSNotFound;
 		editedRow = NSNotFound;
 		
@@ -622,8 +690,7 @@
 
 		[popupCell selectItemAtIndex:[currentValue integerValue]];
 		[selectedCell.menu popUpMenuPositioningItem:nil atLocation:cellFrame.origin inView:self];
-	
-
+		
 	} else {
 		NSText *editor = [[self window] fieldEditor:YES forObject:self];
 		editor.delegate = self;
@@ -632,8 +699,7 @@
 	}
 }
 
-- (void)cellPopupMenuItemSelected:(NSMenuItem *)menuItem
-{
+- (void)cellPopupMenuItemSelected:(NSMenuItem *)menuItem {
 	MBPopupButtonCell *cell = (MBPopupButtonCell *)[[self tableGrid] _cellForColumn:editedColumn];
 	[cell selectItem:menuItem];
 

@@ -28,6 +28,7 @@
 #import "MBPopupButtonCell.h"
 #import "MBButtonCell.h"
 #import "MBImageCell.h"
+#import "MBLevelIndicatorCell.h"
 
 @interface NSMutableArray (SwappingAdditions)
 - (void)moveObjectsAtIndexes:(NSIndexSet *)indexes toIndex:(NSUInteger)index;
@@ -38,6 +39,7 @@
 @property (nonatomic, strong) MBTableGridCell *textCell;
 @property (nonatomic, strong) MBButtonCell *checkboxCell;
 @property (nonatomic, strong) MBImageCell *imageCell;
+@property (nonatomic, strong) MBLevelIndicatorCell *ratingCell;
 @end
 
 @implementation MBTableGridController
@@ -100,8 +102,9 @@
 	
 	self.imageCell = [[MBImageCell alloc] init];
 	
+	self.ratingCell = [[MBLevelIndicatorCell alloc] initWithLevelIndicatorStyle:NSRatingLevelIndicatorStyle];
+	self.ratingCell.editable = YES;
 }
-
 
 -(NSString *) genRandStringLength: (int) len
 {
@@ -201,6 +204,8 @@
 		cell = self.checkboxCell;
 	} else if (columnIndex == 6) {
 		cell = self.imageCell;
+	} else if (columnIndex == 8) {
+		cell = self.ratingCell;
 	} else {
 		cell = self.textCell;
 	}
@@ -209,6 +214,10 @@
 }
 
 - (NSImage *)tableGrid:(MBTableGrid *)aTableGrid accessoryButtonImageForColumn:(NSUInteger)columnIndex row:(NSUInteger)row {
+	
+	if (columnIndex == 8) {
+		return nil;
+	}
 	
 	if ([tableGrid.selectedRowIndexes containsIndex:row] && [tableGrid.selectedColumnIndexes containsIndex:columnIndex]) {
 		NSImage *buttonImage = [NSImage imageNamed:@"acc-quicklook"];
@@ -220,16 +229,14 @@
 	
 }
 
-- (NSArray *)tableGrid:(MBTableGrid *)aTableGrid availableObjectValuesForColumn:(NSUInteger)columnIndex
-{
+- (NSArray *)tableGrid:(MBTableGrid *)aTableGrid availableObjectValuesForColumn:(NSUInteger)columnIndex {
 	if (columnIndex == 2) {
 		return @[ @"Action & Adventure", @"Comedy", @"Romance", @"Thriller" ];
 	}
 	return nil;
 }
 
-- (void)tableGrid:(MBTableGrid *)aTableGrid setObjectValue:(id)anObject forColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex
-{
+- (void)tableGrid:(MBTableGrid *)aTableGrid setObjectValue:(id)anObject forColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex {
 	if (columnIndex >= [columns count]) {
 		return;
 	}	
@@ -245,18 +252,24 @@
 	}
 	
 	column[rowIndex] = anObject;
+	
+//	if (columnIndex == 8) {
+//		NSLog(@"value in 8: %@", anObject);
+//		if (![anObject isKindOfClass:[NSNumber class]]) {
+//			NSLog(@"stop");
+//		}
+//	}
+
 }
 
 
-- (float)tableGrid:(MBTableGrid *)aTableGrid setWidthForColumn:(NSUInteger)columnIndex
-{
+- (float)tableGrid:(MBTableGrid *)aTableGrid setWidthForColumn:(NSUInteger)columnIndex {
     
     return (columnIndex < columnSampleWidths.count) ? [columnSampleWidths[columnIndex] floatValue] : 60;
     
 }
 
--(NSColor *)tableGrid:(MBTableGrid *)aTableGrid backgroundColorForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex
-{
+-(NSColor *)tableGrid:(MBTableGrid *)aTableGrid backgroundColorForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex {
     if (rowIndex % 2)
         return [NSColor colorWithDeviceWhite:0.950 alpha:1.000];
     else
