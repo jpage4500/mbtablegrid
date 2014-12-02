@@ -30,6 +30,10 @@
 #import "MBImageCell.h"
 #import "MBLevelIndicatorCell.h"
 
+NSString* kAutosavedColumnWidthKey = @"AutosavedColumnWidth";
+NSString* kAutosavedColumnIndexKey = @"AutosavedColumnIndex";
+NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
+
 @interface NSMutableArray (SwappingAdditions)
 - (void)moveObjectsAtIndexes:(NSIndexSet *)indexes toIndex:(NSUInteger)index;
 @end
@@ -40,6 +44,7 @@
 @property (nonatomic, strong) MBButtonCell *checkboxCell;
 @property (nonatomic, strong) MBImageCell *imageCell;
 @property (nonatomic, strong) MBLevelIndicatorCell *ratingCell;
+@property (nonatomic, strong) NSDictionary *columnWidths;
 @end
 
 @implementation MBTableGridController
@@ -51,6 +56,11 @@
     columnSampleWidths = @[@40, @50, @60, @70, @80, @90, @100, @110, @120, @130];
     
 	columns = [[NSMutableArray alloc] initWithCapacity:500];
+
+	tableGrid.autosaveName = @"MBTableGrid";
+	
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+	self.columnWidths = [defaults objectForKey:tableGrid.autosaveName];
 
 	NSNumberFormatter *decimalFormatter = [[NSNumberFormatter alloc] init];
 	decimalFormatter.numberStyle = NSNumberFormatterCurrencyStyle;
@@ -104,6 +114,7 @@
 	
 	self.ratingCell = [[MBLevelIndicatorCell alloc] initWithLevelIndicatorStyle:NSRatingLevelIndicatorStyle];
 	self.ratingCell.editable = YES;
+	
 }
 
 -(NSString *) genRandStringLength: (int) len
@@ -265,8 +276,19 @@
 
 - (float)tableGrid:(MBTableGrid *)aTableGrid setWidthForColumn:(NSUInteger)columnIndex {
     
-    return (columnIndex < columnSampleWidths.count) ? [columnSampleWidths[columnIndex] floatValue] : 60;
-    
+//    return (columnIndex < columnSampleWidths.count) ? [columnSampleWidths[columnIndex] floatValue] : 60;
+	
+	CGFloat width = 80;
+	
+	NSString *columnName = [NSString stringWithFormat:@"C-%lu", (long)columnIndex];
+	NSDictionary *columnProperty = self.columnWidths[columnName];
+	
+	if (columnProperty) {
+		width =  [columnProperty[kAutosavedColumnWidthKey] floatValue];
+	}
+	
+	return width;
+	
 }
 
 -(NSColor *)tableGrid:(MBTableGrid *)aTableGrid backgroundColorForColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex {

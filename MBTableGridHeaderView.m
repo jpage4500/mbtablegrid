@@ -27,6 +27,10 @@
 #import "MBTableGrid.h"
 #import "MBTableGridContentView.h"
 
+NSString* kAutosavedColumnWidthKey = @"AutosavedColumnWidth";
+NSString* kAutosavedColumnIndexKey = @"AutosavedColumnIndex";
+NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
+
 @interface MBTableGrid (Private)
 - (NSString *)_headerStringForColumn:(NSUInteger)columnIndex;
 - (NSString *)_headerStringForRow:(NSUInteger)rowIndex;
@@ -283,7 +287,13 @@
 {
     
     if (canResize) {
-        
+		
+		// if we have an autosaveName, store a dictionary of column widths.
+		
+		if (self.autosaveName) {
+			[self autoSaveColumnProperties];
+		}
+		
         isResizing = NO;
 		
 		// update cache of column rects
@@ -340,6 +350,23 @@
     
 }
 
+
+- (void)autoSaveColumnProperties {
+	if (!columnAutoSaveProperties) {
+		columnAutoSaveProperties = [NSMutableDictionary dictionary];
+	}
+	
+	[self.tableGrid.columnRects enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+		NSValue *rectValue = obj;
+		NSRect rect = [rectValue rectValue];
+		NSDictionary *columnDict = @{kAutosavedColumnWidthKey : @(rect.size.width),
+									 kAutosavedColumnHiddenKey : @NO};
+		columnAutoSaveProperties[[NSString stringWithFormat:@"C-%@", key]] = columnDict;
+	}];
+	
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+	[defaults setObject:columnAutoSaveProperties forKey:self.autosaveName];
+}
 
 #pragma mark -
 #pragma mark Subclass Methods

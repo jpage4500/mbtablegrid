@@ -92,7 +92,7 @@
  *				selects the top-left one and begins
  *				editing its value.
  */
-- (void)editSelectedCell:(id)sender;
+- (void)editSelectedCell:(id)sender text:(NSString *)aString;
 
 /**
  * @}

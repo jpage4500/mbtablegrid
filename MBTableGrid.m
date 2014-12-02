@@ -221,6 +221,11 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 	return indicatorImage;
 }
 
+- (void)setAutosaveName:(NSString *)autosaveName {
+	_autosaveName = autosaveName;
+	self.columnHeaderView.autosaveName = autosaveName;
+}
+
 - (void)drawRect:(NSRect)aRect {
 	// If the view is the first responder, draw the focus ring
 	NSResponder *firstResponder = [[self window] firstResponder];
@@ -740,7 +745,7 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 	NSCell *selectedCell = [self _cellForColumn:column];
 	
 	if (![selectedCell isKindOfClass:[MBImageCell class]]) {
-		[contentView editSelectedCell:self];
+		[contentView editSelectedCell:self text:aString];
 		
 		if ([selectedCell isKindOfClass:[MBTableGridCell class]]) {
 			// Insert the typed string into the field editor

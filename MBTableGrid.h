@@ -328,6 +328,13 @@ typedef enum {
  */
 @property(assign) BOOL allowsMultipleSelection;
 
+
+/**
+ * @brief		The autosave name for this grid
+ */
+@property (nonatomic) NSString *autosaveName;
+
+
 /**
  * @}
  */

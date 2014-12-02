@@ -357,7 +357,7 @@
 				[cell trackMouse:theEvent inRect:cellFrame ofView:self untilMouseUp:YES];
 				
 			} else {
-				[self editSelectedCell:self];
+				[self editSelectedCell:self text:nil];
 			}
 			
 		// Expand a selection when the user holds the shift key
@@ -410,7 +410,7 @@
     // Edit cells on double click if they don't already edit on first click
 	} else if (theEvent.clickCount == 2 && !cellEditsOnFirstClick && ![cell isKindOfClass:[MBLevelIndicatorCell class]]) {
 		// Double click
-		[self editSelectedCell:self];
+		[self editSelectedCell:self text:nil];
 	}
 
 	// Any cells that should edit on first click are handled here
@@ -419,7 +419,7 @@
 		cellFrame = NSOffsetRect(cellFrame, -self.enclosingScrollView.frame.origin.x, -self.enclosingScrollView.frame.origin.y);
 		BOOL mouseEventHitButton = [cell hitTestForEvent:theEvent inRect:cellFrame ofView:self] == NSCellHitContentArea;
 		if (mouseEventHitButton) {
-			[self editSelectedCell:self];
+			[self editSelectedCell:self text:nil];
 		}
 	}
 
@@ -614,7 +614,7 @@
 	return (MBTableGrid *)[[self enclosingScrollView] superview];
 }
 
-- (void)editSelectedCell:(id)sender
+- (void)editSelectedCell:(id)sender text:(NSString *)aString
 {
 	NSInteger selectedColumn = [[self tableGrid].selectedColumnIndexes firstIndex];
 	NSInteger selectedRow = [[self tableGrid].selectedRowIndexes firstIndex];
@@ -654,10 +654,19 @@
 		
 		id currentValue = [[self tableGrid] _objectValueForColumn:selectedColumn row:selectedRow];
 		
-		if ([currentValue integerValue] >= cell.maxValue) {
-			cell.objectValue = @0;
+		if ([aString isEqualToString:@" "]) {
+			if ([currentValue integerValue] >= cell.maxValue) {
+				cell.objectValue = @0;
+			} else {
+				cell.objectValue = @([currentValue integerValue] + 1);
+			}
 		} else {
-			cell.objectValue = @([currentValue integerValue] + 1);
+			NSInteger ratingValue = [aString integerValue];
+			if (ratingValue <= cell.maxValue) {
+				cell.objectValue = @([aString integerValue]);
+			} else {
+				cell.objectValue = @([currentValue integerValue]);
+			}
 		}
 		
 		[[self tableGrid] _setObjectValue:cell.objectValue forColumn:selectedColumn row:selectedRow];
