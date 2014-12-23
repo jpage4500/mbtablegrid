@@ -55,7 +55,7 @@ NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
     
     columnSampleWidths = @[@40, @50, @60, @70, @80, @90, @100, @110, @120, @130];
     
-	columns = [[NSMutableArray alloc] initWithCapacity:500];
+	columns = [[NSMutableArray alloc] initWithCapacity:10];
 
 	tableGrid.autosaveName = @"MBTableGrid";
 	
@@ -72,14 +72,14 @@ NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
 
 	// Add 10 columns
 	int i = 0;
-	while (i < 100) {
+	while (i < 10) {
 		[self addColumn:self];
 		i++;
 	}
 	
 	// Add 100 rows
 	int j = 0;
-	while (j < 1000) {
+	while (j < 10) {
 		[self addRow:self];
 		j++;
 	}
@@ -264,12 +264,7 @@ NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
 	
 	column[rowIndex] = anObject;
 	
-//	if (columnIndex == 8) {
-//		NSLog(@"value in 8: %@", anObject);
-//		if (![anObject isKindOfClass:[NSNumber class]]) {
-//			NSLog(@"stop");
-//		}
-//	}
+//	NSLog(@"col: %lu, row: %lu, obj: %@", columnIndex, rowIndex, anObject);
 
 }
 
@@ -351,6 +346,39 @@ NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
 	return YES;
 }
 
+- (void)tableGrid:(MBTableGrid *)aTableGrid copiedCellsAtRows:(NSIndexSet *)rowIndexes columns:(NSIndexSet *)columnIndexes {
+	NSMutableArray *rowData = [NSMutableArray arrayWithCapacity:rowIndexes.count];
+	
+	[rowIndexes enumerateIndexesUsingBlock:^(NSUInteger rowIndex, BOOL *stop) {
+		
+		NSMutableArray *colData = [NSMutableArray arrayWithCapacity:columnIndexes.count];
+		
+		[columnIndexes enumerateIndexesUsingBlock:^(NSUInteger columnIndex, BOOL *stop) {
+			
+			NSArray *row = columns[columnIndex];
+			id cellData = row[rowIndex];
+			[colData addObject:cellData];
+			
+		}];
+		
+		NSString *rowString = [colData componentsJoinedByString:@"\t"];
+		
+		[rowData addObject:rowString];
+		
+	}];
+	
+	NSString *tsvString = [rowData componentsJoinedByString:@"\n"];
+	
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	
+	[pasteboard clearContents];
+
+	[pasteboard declareTypes:@[NSPasteboardTypeTabularText, NSPasteboardTypeString] owner:nil];
+	[pasteboard setString:tsvString forType:NSPasteboardTypeTabularText];
+	[pasteboard setString:tsvString forType:NSPasteboardTypeString];
+
+}
+
 #pragma mark MBTableGridDelegate
 
 - (void)tableGridDidMoveRows:(NSNotification *)aNotification
@@ -367,6 +395,7 @@ NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
 		[self quickLookAction:nil];
 	}
 }
+
 
 #pragma mark - QuickLook
 

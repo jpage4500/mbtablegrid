@@ -156,7 +156,16 @@
 				
 				[_cell setFormatter:nil]; // An exception is raised if the formatter is not set to nil before changing at runtime
 				[_cell setFormatter:[[self tableGrid] _formatterForColumn:column]];
-				[_cell setObjectValue:[[self tableGrid] _objectValueForColumn:column row:row]];
+				
+				id objectValue = [[self tableGrid] _objectValueForColumn:column row:row];
+				
+				if ([_cell isKindOfClass:[MBPopupButtonCell class]]) {
+					MBPopupButtonCell *cell = (MBPopupButtonCell *)_cell;
+					NSInteger index = [cell indexOfItemWithTitle:objectValue];
+					[_cell setObjectValue:@(index)];
+				} else {
+					[_cell setObjectValue:objectValue];
+				}
 				
 				if ([_cell isKindOfClass:[MBPopupButtonCell class]]) {
 					
@@ -712,9 +721,7 @@
 	MBPopupButtonCell *cell = (MBPopupButtonCell *)[[self tableGrid] _cellForColumn:editedColumn];
 	[cell selectItem:menuItem];
 
-	NSArray *options = [[self tableGrid] _availableObjectValuesForColumn:editedColumn];
-	id objectValue = @([options indexOfObject:menuItem.title]);
-	[[self tableGrid] _setObjectValue:objectValue forColumn:editedColumn row:editedRow];
+	[[self tableGrid] _setObjectValue:menuItem.title forColumn:editedColumn row:editedRow];
 	
 	editedColumn = NSNotFound;
 	editedRow = NSNotFound;

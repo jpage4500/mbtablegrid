@@ -346,6 +346,20 @@ NSString *MBTableGridRowDataType = @"MBTableGridRowDataType";
 
 #pragma mark NSResponder Event Handlers
 
+- (void)copy:(id)sender {
+	
+	NSIndexSet *selectedColumns = [self selectedColumnIndexes];
+	NSIndexSet *selectedRows = [self selectedRowIndexes];
+
+	if ([[self delegate] respondsToSelector:@selector(tableGrid:copiedCellsAtRows:columns:)]) {
+		[[self delegate] tableGrid:self copiedCellsAtRows:selectedRows columns:selectedColumns];
+	}
+}
+
+- (void)paste:(id)sender {
+	
+}
+
 - (void)insertTab:(id)sender {
 	// Pressing "Tab" moves to the next column
 	[self moveRight:sender];

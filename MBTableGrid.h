@@ -334,6 +334,8 @@ typedef enum {
  */
 @property (nonatomic) NSString *autosaveName;
 
+- (void)copy:(id)sender;
+
 
 /**
  * @}
@@ -1123,6 +1125,24 @@ typedef enum {
  *  @param      rowIndex         The row of the cell
  */
 - (void)tableGrid:(MBTableGrid *)aTableGrid accessoryButtonClicked:(NSUInteger)columnIndex row:(NSUInteger)rowIndex;
+
+/**
+ *  @brief      Informs the delegate of the cell data that has been copied to the clipboard
+ *
+ *  @param      aTableGrid       The table grid that contains the cell
+ *  @param      columnIndex      The column of the cell
+ *  @param      rowIndex         The row of the cell
+ */
+- (void)tableGrid:(MBTableGrid *)aTableGrid copiedCellsAtRows:(NSIndexSet *)rowIndexes columns:(NSIndexSet *)columnIndexes;
+
+/**
+ *  @brief      Informs the delegate of the cell data that is being pasted to the clipboard
+ *
+ *  @param      aTableGrid       The table grid that contains the cell
+ *  @param      columnIndex      The column of the cell
+ *  @param      rowIndex         The row of the cell
+ */
+- (void)tableGrid:(MBTableGrid *)aTableGrid pastedCellsAtIndexPath:(NSIndexSet *)indexPath;
 
 /**
  * @}
