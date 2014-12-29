@@ -8,6 +8,8 @@
 
 #import "MBTableGridEditable.h"
 
+@class NSButtonCell;
+
 @interface MBButtonCell : NSButtonCell <MBTableGridEditable>
 
 @property (nonatomic, strong) NSImage *accessoryButtonImage;

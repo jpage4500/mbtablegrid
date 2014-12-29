@@ -29,10 +29,7 @@
 #import "MBButtonCell.h"
 #import "MBImageCell.h"
 #import "MBLevelIndicatorCell.h"
-
-NSString* kAutosavedColumnWidthKey = @"AutosavedColumnWidth";
-NSString* kAutosavedColumnIndexKey = @"AutosavedColumnIndex";
-NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
+#import "MBTableGridHeaderView.h"
 
 @interface NSMutableArray (SwappingAdditions)
 - (void)moveObjectsAtIndexes:(NSIndexSet *)indexes toIndex:(NSUInteger)index;

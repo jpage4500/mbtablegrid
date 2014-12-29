@@ -27,9 +27,9 @@
 #import "MBTableGrid.h"
 #import "MBTableGridContentView.h"
 
-NSString* kAutosavedColumnWidthKey = @"AutosavedColumnWidth";
-NSString* kAutosavedColumnIndexKey = @"AutosavedColumnIndex";
-NSString* kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
+NSString* const kAutosavedColumnWidthKey = @"AutosavedColumnWidth";
+NSString* const kAutosavedColumnIndexKey = @"AutosavedColumnIndex";
+NSString* const kAutosavedColumnHiddenKey = @"AutosavedColumnHidden";
 
 @interface MBTableGrid (Private)
 - (NSString *)_headerStringForColumn:(NSUInteger)columnIndex;

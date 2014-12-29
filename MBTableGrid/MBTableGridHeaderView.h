@@ -26,6 +26,10 @@
 #import <Cocoa/Cocoa.h>
 #import "MBTableGridHeaderCell.h"
 
+extern NSString* const kAutosavedColumnWidthKey;
+extern NSString* const kAutosavedColumnIndexKey;
+extern NSString* const kAutosavedColumnHiddenKey;
+
 @class MBTableGrid;
 
 /**

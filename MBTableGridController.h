@@ -24,7 +24,7 @@
  */
 
 #import <Cocoa/Cocoa.h>
-#import <MBTableGrid/MBTableGrid.h>
+#import "MBTableGrid.h"
 #import <Quartz/Quartz.h>
 
 @interface MBTableGridController : NSObject <MBTableGridDataSource, MBTableGridDelegate, QLPreviewPanelDelegate, QLPreviewPanelDataSource> {

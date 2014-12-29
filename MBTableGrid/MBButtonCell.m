@@ -6,6 +6,7 @@
 //
 //
 
+#import <Cocoa/Cocoa.h>
 #import "MBButtonCell.h"
 
 @implementation MBButtonCell
